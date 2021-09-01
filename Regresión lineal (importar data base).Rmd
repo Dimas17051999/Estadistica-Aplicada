@@ -1,0 +1,276 @@
+---
+title: "Regresión lineal, importar base de datos "
+author: "DIMAS"
+date: "18/11/2020"
+output:
+  html_document: default
+  pdf_document: default
+editor_options:
+  chunk_output_type: console
+---
+
+# Regresión Lineal Simple 
+
+El modelo a nivel poblacional supone $E[Y|X_i]$ están perfectamente alineadas. Si están perfectamente alineadas, se puede representar en una recta. Donde $\beta_1$ es la ordenada al origen y $\beta_2$ es la pendiente.
+
+$$E[Y|X_i]=\beta_1+\beta_2X_i$$
+
+Si se desea tener los valores reales de $Y_i$, entonces se tiene la siguiente expresión 
+
+$$Y_i=\beta_1+\beta_2X_i+\epsilon_i$$
+
+Donde $\epsilon_i$ es el componente de error aleatorio y se supone que $\epsilon_i$~$N(0, \sigma^2)$
+
+Entonces 
+
+$$Y_i=E[Y|X_i]+\epsilon_i$$
+
+En el caso de tener una muestra, la expresión es la siguiente
+
+$$\hat{Y}_i=\hat{\beta}_1+\hat{\beta}_2X_i$$
+
+Si se desea saber a $Y_i$, entonces
+
+$$Y_i=\hat{\beta}_1+\hat{\beta}_2X_i+\hat{\epsilon}_i$$
+
+Por lo que 
+
+$$Y_i=\hat{Y}_i+\hat{\epsilon}_i$$
+El término de error estimado $\hat{\epsilon}_i"$ se puede calular como 
+
+$$\hat{\epsilon}_i=Y_i-\hat{Y}_i$$
+
+Se desea encontrar las $\hat{\beta}_1$ y $\hat{\beta}_2$ que hacen que $\sum\hat{\epsilon}_i^2$ sea mínima 
+
+$$\hat{\beta_2}=\frac{\sum nX_iY_i-\sum X_i \sum Y_i}{n \sum(X_i^2)- (\sum X_i)^2}$$
+
+$$\hat{\beta_1}=\bar{Y}-\hat{\beta_2}\hat{X}$$
+
+# Ejemplo
+
+Para la siguiente muestra de _ventas VS publicidad_ , encuentre la mejor recta que lo represente. 
+
+```{r}
+
+v <- c(10, 11, 9.5, 15, 13, 12.5, 21, 19, 25, 23)        #Ventas en Miles de Unidades (EJE Y) Podríamos sacara media, desviación, histograma, etc
+
+p <- c(1, 1, 1, 1.5, 1.5, 1.5, 2, 2, 2.5, 2.5) #Publicidad en Miles de Unidades (EJE X )
+
+tabla_1 <- data.frame(Publicidad=p,Ventas=v )
+tabla_1
+
+plot(v~p, col="Red", main="Ventas VS Publicidad", xlab="Publicidad [mUSD", ylab="Ventas [mUSD]", xlim=c(0,3), ylim=c(0,30)) #v~p quiere decir que v esta en función de p. Y esta en funcion de x 
+
+
+```
+
+Calculo de  $\hat{\beta}_1$ y $\hat{\beta}_2$
+
+```{r}
+n <- length(v)
+
+b_2 <- (n*sum(p*v)-sum(p)*sum(v))/(n*sum(p^2)-sum(p)^2)
+b_1 <- mean(v)-b_2*mean(p)
+
+
+
+```
+
+
+La respuesta es:
+
+
+$\hat{\beta}_1=$ `r round(b_1,2)` y $\hat{\beta}_2=$ `r round(b_2, 2)`
+
+```{r}
+
+
+x_i <- seq(1, 2.5, by=.5)
+y_i <- b_1 + (b_2*x_i)
+
+plot(v~p, col="Red", main="Ventas VS Publicidad", xlab="Publicidad [mUSD]", ylab="Ventas [mUSD]", xlim=c(0,3), ylim=c(0,30)) 
+lines(x_i, y_i)
+
+```
+Solución usando el comando _lm_
+
+```{r}
+m_1 <- lm(Ventas~Publicidad, data= tabla_1 ) #Reconoce los encabezados de la tabla 
+
+#lm(tabla_1$Ventas ~ tabla_1$Publicidad )
+#lm(v ~ p )
+#lm(y~x)
+
+m_1 #En donde intercept es la pendientes b1 y publicidad b2 
+#m_1$residuals                son los errores 
+#m_1$fitted.values            son valores ajustados 
+
+tabla_2 <- data.frame(Publicidad=p, Ventas= v, Ventas_estimadas = m_1$fitted.values, Errores_estimadas= m_1$residuals)
+
+
+tabla_2
+
+
+plot(v ~ p, col="Red", main="Ventas VS Publicidad", xlab="Publicidad [mUSD", ylab="Ventas [mUSD]", xlim=c(0,3), ylim=c(0,30)) #v~p quiere decir que v esta en función de p. Y esta en funcion de x
+abline(m_1)
+
+```
+
+# Ejemplo Práctico
+
+Importar datos a R
+
+```{r}
+library(readxl)
+Base <- read_excel("Base de datos encuestas.xlsx")
+#View(Base)
+
+```
+
+Análisis de los datos 
+
+```{r}
+
+str(Base) #structure
+
+names(Base) #headers de "Base"
+
+summary(Base)
+
+
+```
+
+"Cuál fue tu promedio de bachillerato?"
+
+```{r}
+p_b <- Base$`¿CUAL FUE TU PROMEDIO DE BACHILLERATO?`
+
+mean(p_b)
+sd(p_b)
+hist(p_b)
+```
+
+"Cuál fue tu promedio de licenciatura?"
+
+```{r}
+p_l <- Base$`¿CUAL ES TU PROMEDIO ACTUAL EN LA CARRERA?`
+
+mean(p_l)
+sd(p_l)
+hist(p_l)
+
+par(mfrow=c(1,2)) #para emparejar dos graficas en una
+
+#mfrow o mfcol para asignar el número de renglones, columnas 
+
+hist(p_b)
+hist(p_l)
+dev.off() # funcion para reiniciar 
+```
+
+
+Regresión lineal 
+
+```{r}
+
+m_2 <- lm(`¿CUAL ES TU PROMEDIO ACTUAL EN LA CARRERA?`~ `¿CUAL FUE TU PROMEDIO DE BACHILLERATO?`, data=Base)
+
+#m_2 <- lm(Base$`¿CUAL ES TU PROMEDIO ACTUAL EN LA CARRERA?`~Base$`¿CUAL FUE TU PROMEDIO DE BACHILLERATO?`)
+
+plot((Base$`¿CUAL ES TU PROMEDIO ACTUAL EN LA CARRERA?`~Base$`¿CUAL FUE TU PROMEDIO DE BACHILLERATO?`), ylim=c(0,10), xlim=c(0,10), col="Red", xlab="Cuál fue tu promedio en bachillerato?", ylab = "Cuál es tu promedio en la carrera?", main="Bachillerato VS Carrera")
+abline(m_2, col="Blue")
+abline(v=c(7,10))
+
+cor(Base$`¿CUAL FUE TU PROMEDIO DE BACHILLERATO?`, Base$`¿CUAL ES TU PROMEDIO ACTUAL EN LA CARRERA?`)
+```
+
+Resultados 
+
+```{r}
+
+m_2 #intercept es la B0 por la cruza el eje de las y cuando x=0
+#intercept es B0 y es el valor que minimiza los errores al cuadrado 
+
+summary(m_2)
+
+confint(m_2, level=0.95)
+```
+
+$$Y_i=\beta_1+\beta_2X_i$$
+
+$$P_A=Promedio~Actual,~P_B=Promedio~Bachillerato$$
+$$P_A=4.3214 +0.4771P_B$$
+
+```{r} 
+#Esta sección ya podría considerarse como un pronóstico
+P_B <- 9
+P_A=4.3214 +0.4771*P_B
+P_A
+
+```
+
+# Covarianza
+
+
+
+
+# Correlación ~ "Desviación estándar" 
+
+$$\rho=\frac{\sigma_{xy}}{\sigma_x\sigma_y}$$
+
+$$-1\leq\rho\leq1$$
+
+Es la fuerza de la relación lineal entre dos variables alelatorias. Es la fuerza de como covarian las dos variables aleatorias.
+
+Fuerza de relación lineal: que tan bien se aproximan a una recta los valores de las dos variables.
+
+___Correlación no implica causalidad___
+
+```{r}
+x_p <- c(1,2,2,3,3,3,4,4,5,6,6)
+y_p <- c(1.5, 1.5, 2.5, 2.5, 3, 3.5, 3.5, 4.5, 5.5, 6, 6.5)
+
+r_xy <- cor(x_p, y_p)
+r_yx <- cor(y_p, x_p)
+
+sd(x_p)
+sd(y_p)
+
+plot(y_p~x_p)
+
+ml_yx <- lm(y_p~x_p)
+ml_xy <- lm(x_p~y_p)
+
+```
+
+Un modelo lineal tampoco representa causalidad 
+
+```{r}
+plot(y_p~x_p, col="Red")
+abline(ml_yx, col="Blue")
+abline(ml_xy, col="Green")
+
+```
+
+La única manera de demostrar la causalidad es por conceptos y teorías externas. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,162 @@
+---
+title: "EXAMEN"
+author: 
+date: "16/12/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+Reyes Gómez Pedro Ricardo, Mejía Chávez Diego Arturo, Espinoza Rodríguez Juan Pablo. 
+
+Prueba Durbin-Watson: Verifica que la covarianza entre los errores es cero
+
+$H_0:\rho=0~~,~~H_A:\rho\neq0$
+
+El estadístico que utiliza esta prueba es: 
+
+$DW=\frac{\sum_{t=2}^n (\hat u_t - \hat u_{t-1})^2}{\sum_{t=1}^n \hat u _t^2}$
+
+James Durbin era un estadista y econometrista británico,Geoffrey Stuart Watson fue un estadista australiano.También participo en el desarollo de la prueba Wheeler-Watson para información ciclica. 
+
+Prueba Jarque-Bera : verifica que los erroes sean normales 
+
+$H_0:Los~datos~son~normales,~H_A:Los~datos~NO~son~normales$
+
+El estadístico que se utiliza es: 
+
+$JB=T[\frac{\hat{cs}^2}{6}+\frac{(\hat{cc}-3)^2}{24}]$
+
+Carlos Jarque Uribe es economista y actuario y Anil K. Bera es profesor de economía en la universidad de Illinois 
+
+Prueba Breusch-Pagan: Es una prueba para explorar si se cumple el supuesto de homocedasticidad de los errores.
+
+$H_0:Los~errores~son~homocedasticos~~y~~H_A:Los~errores~no~son~ homocedasticos$
+
+$\hat u^2=\gamma_0+\gamma_1 x+v$
+
+Fue desarrollada en 1979 por Trevor Breusch.
+
+
+2.-Modelo Lineal Múltiple Dos Variables 
+```{r}
+library(lmtest)
+library(tseries)
+library(readxl)
+base <- read_excel("F:/Estadistica aplicada/Base de datos encuestas.xlsx")
+```
+
+
+
+```{r}
+#Paso 1
+a <- base$`¿CUAL ES TU PROMEDIO ACTUAL EN LA CARRERA?`
+r <- base$`¿CUANTAS MATERIAS HAS REPROBADO?`
+p <- base$`¿CUAL FUE TU PROMEDIO DE BACHILLERATO?`
+
+m<-lm(a~r+p)
+#Paso 2
+dwtest(m)
+#Paso 3
+jarque.bera.test(m$residuals)
+#Paso 4
+bptest(m)
+#Paso 5,6,7
+summary(m)
+#Paso 8
+confint(m)
+```
+
+De las pruebas podemos analizar que en la prueba Durbin-Watson existe suficiente evidencia para rechazar la hipotesis nula.
+
+En la prueba Jarque-Bera también existe suficiente evidencia para rechazar la hipotésis nula.
+
+En la prueba Breusch-Pagan no existe suficiente evidencia para rechazar la hipotésis nula. 
+
+Según el p-value, existe suficiente evidencia para afirmar que al menos una de las $\beta$'s es diferente de cero.
+
+El análisis entregado por R, nos indica que las dos varaibles son estadísticamente significativas por lo tanto no existe suficiente evidencia para rechazar la hipotesis nula en la que $\beta=k$
+
+El 41.42% de la varación en el promedio actual es por un cambio en las variables de materias reprobadas y el promedio de bachillerato. El otro 58.58% se debe a variables aleatorias. 
+
+Intervalos de confianza: 
+
+Materias reprobadas: [-0.14,-0.097]
+Promedio en bachillerato: [0.2,0.37]
+
+
+Paso 9
+
+Estudiante con 1 materia reprobada y 8 de promedio.
+
+Estudiante con 4 materias reprobadas y 9.8 de promedio.
+
+Estudiante con 2 materias reprobadas y 9 de promedio. 
+
+```{r}
+materias_r <- c(1,4,2)
+prome <- c(8,9.8,9)
+modelo <- 6.22605 -(0.11708*materias_r)+(0.29073*prome)
+```
+
+Los promedios de cada alumno, respectivamente son `r modelo`
+
+
+3.-Modelo Lineal Múltiple dos variables 
+
+```{r}
+b <- base$`¿CUENTAS CON ALGUNA BECA?`
+b[b=="SI"]<-1
+b[b=="NO"]<-0
+b <- as.numeric(b)
+
+m1 <- lm(a~p+as.factor(b))
+m1
+#Paso 2
+dwtest(m1)
+#Paso 3
+jarque.bera.test(m1$residuals)
+#Paso 4
+bptest(m1)
+#Paso 5,6,7
+summary(m1)
+#Paso 8
+confint(m1)
+
+```
+
+De las pruebas podemos analizar que en la prueba Durbin-Watson existe suficiente evidencia para rechazar la hipotesis nula.
+
+En la prueba Jarque-Bera también existe suficiente evidencia para rechazar la hipotésis nula.
+
+En la prueba Breusch-Pagan, de igual manera,  existe suficiente evidencia para rechazar la hipotésis nula. 
+
+Según el p-value, existe suficiente evidencia para afirmar que al menos una de las $\beta$'s es diferente de cero.
+
+El análisis entregado por R, nos indica que las dos varaibles son estadísticamente significativas por lo tanto no existe suficiente evidencia para rechazar la hipotesis nula en la que $\beta=k$
+
+El 29.58% de la varación en el promedio actual se debe a un cambio en las variables propuestas. El otro 70.42% se debe a variables aleatorias. 
+
+Intervalos de confianza: 
+
+Beca: [0.2628707,0.4867899]
+Promedio en bachillerato: [0.3356943,0.5156448]
+
+
+Paso 9 Prónosticos 
+
+Un estudiante que sí tiene beca y un promedio de 8.8
+
+Un estudiante que no tiene beca y un promedio de 8.8
+
+Un estudiante que sí tiene beca y un promedio de 7.6
+
+```{r}
+be<- c(1,0,1)
+pro<- c(8.8,8.8,7.6)
+mod <- 4.6003 + ( 0.4257*pro)+(0.3748*be)
+mod
+```
+
+Por lo tanto, los promedios actuales de cada alumno respectivamente serán  `r mod`
+
+

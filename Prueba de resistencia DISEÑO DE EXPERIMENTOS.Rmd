@@ -1,0 +1,167 @@
+---
+title: "Diseño de experimentos"
+author: ''
+date: "25/1/2021"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+$$Dimas~Ramírez~Luis~Daniel$$
+
+\pagebreak
+
+# Planteamiento del problema
+
+Para este trabajo diseñamos un experimento para probar la resistencia de los diferentes papeles higiénico que existen  en el mercado.
+
+El planteamiento de este trabajo surge a partir de la creatividad condicionada a las opciones que tenemos dentro de nuestras casas debido a las condiciones sanitarias de la CDMX.
+
+Tomamos las marcas en función de las opciones que tenía cada integrante dentro de nuestras casas. Decidimos medir la resistencia de la siguiente manera: 
+
+- Pusimos tres cuadritos de cada marca de papel higiénico sobre un vaso.
+- Con una liga, tensamos el papel higiénico.
+- Colocamos diferentes tipos de monedas para cada prueba. 
+- Una vez teniendo este escenario completo. 
+- Con un gotero comenzamos a dejar caer gotas sobre el papel higiénico hasta que el peso de la moneda hiciera que se rompiera el papel.
+
+![](F:/7mo semestre/Estadistica aplicada/dis.jpg)
+
+___La resistencia la medimos en función de la cantidad de gotas que el papel puede soportar antes de que se rompa con cierta moneda.___
+
+El desarrollo del análisis lo realizamos en dos partes;
+
+- Primero lo hicimos con una solo tratamiento para poder aplicar los ___criterios de comparaciones múltiples___
+- Después modificamos un poco el diseño del experimento para poder utilizar el ___moelo de bloques completos___
+
+## Marcas de Papel higiénico
+
+$$Regio:A$$
+
+$$Cotonolle:B$$
+
+$$Suavel:C$$
+
+$$Marca~Económica~Premium:D$$
+
+# Modelo Simple y Criterios de comparaciones múltiples
+
+```{r}
+
+tipos <- c("A","B","C","D")
+no_gotas <- c(10,119,109,18,49,41,38,38,20,39,31,24,40,47,51,41,47,22,21,28,47,56,46,49,24,29,30,31,42,21,25,45,29,18,41,43,18,44,18,27,60,45,40,64,41,48,34,46,6,6,14,9,9,21,7,4,6,5,5,4,56,15,8,50,8,8,19,17,40,26,42,8)
+
+length(no_gotas)
+
+tipos1 <- rep(tipos, each=18)
+
+datos3 <- data.frame(tipos1,no_gotas)
+names(datos3) <- c("TIPOS", "GOTAS")
+
+#datos3
+head(datos3)
+```
+
+## Análisis de varianza
+
+```{r}
+
+mod1 <- aov(GOTAS ~ TIPOS, data=datos3)
+
+summary(mod1)
+
+```
+
+La probabilidad es $P=0.0031$ por lo tanto, con la función "aov()", se concluye que $P>\alpha$ con un $\alpha=0.05$; existe suficiente evidencia para rechazar la $H_0: Todas~las~marcas~son~igual~de~resistentes$
+
+## Diagrama de caja
+
+```{r}
+boxplot(GOTAS ~ TIPOS, data = datos3,  col = "BLUE", main="Diagrama de Cajas", ylim=c(0,70))
+
+```
+
+___A simple vista podemos notar que hay una probable intersección de todas las marcas, sin ambargo el análisis con la función___ $aov()$ ___nos indica que sí existe diferencia entre al menos alguna de las marcas.___ 
+
+## LSD test 
+
+```{r}
+library(agricolae)
+
+LSD.test(mod1, "TIPOS", console = TRUE)
+
+```
+
+___Con el análisis con LSD, podemos concluir que la marca A y B no son significativamente diferentes, sin embargo la marca C Y D sí son significativamente diferentes. Por lo tanto para la marca A y B podríamos inferir que tienen la misma resistencia, mientras que la marca C y D tienen resistencias diferentes a las de la marca A y B.___
+
+## TUKEY test
+
+```{r}
+TukeyHSD(mod1)
+```
+
+- La marca B y A no son significativamente diferentes. $B=A$
+- La marca C y A no son significativamente diferentes. $C=A$
+- La marca D y A sí son significativamente diferentes. $D\neq A$
+- La marca C y B no son significativamente diferentes. $C=B$
+- La marca D y B no son significativamente diferentes. $D=B$
+- La marca D y C no son significativamente diferentes. $D=C$
+
+___No hay conclusión porque hay contradicción.___
+
+
+## DUNCAN test
+
+```{r}
+duncan.test(mod1, "TIPOS", console = TRUE)
+```
+
+___Con la prueba Duncan test concluimos lo mismo que con LSD test.___
+
+# Modelo de Bloques Completos
+
+Para el modelo de bloques completos, introducimos un factor como bloqueo. 
+
+El bloque que decidimos introducir fue el de varios tipos de monedas para determinar si efectivamente la resistencia depende del peso de las monedas. 
+
+Diseñamos los pesos de la siguiente manera: 
+
+- Una moneda de $\$5$ : $M1$
+- Dos monedas de $\$5$ : $M2$
+- Una moneda de $\$10$ : $M3$
+- Dos monedas de $\$10$ : $M4$
+
+```{r}
+tipos2 <- c("A","B","C","D")
+m<- c("M1","M2","M3","M4")
+datos4 <- matrix(c(58,15,54,6,101,18,88,23,37,13,20,5,54,12,20,5),byrow = T ,ncol = 4, nrow = 4)
+datos5 <- c(58,15,54,6,101,18,88,23,37,13,20,5,54,12,20,5)
+rownames(datos4) <- tipos2
+colnames(datos4) <- m
+
+datos4
+
+marcas <- rep(tipos2, each=4)
+monedas <- rep(m, times=4)
+length(marcas)
+modelo2 <- aov(datos5 ~ marcas + monedas)
+
+summary(modelo2)
+```
+
+
+# Diagrama de cajas 
+
+```{r}
+boxplot(datos5 ~ marcas,col = "BLUE", main="#Gotas VS Marcas" )
+
+boxplot(datos5 ~ monedas,col = "RED", main="#Gotas VS Monedas" )
+
+
+```
+
+___A partir del análisis de varianza, podemos afirmar que existe suficiente evidencia para afirmar que no todas las marcas tienen la misma resistencia y que además el peso de las monedas afecta el desempeño de la resistencia de cada papel higiénico a un nivel de significancia de___ $\alpha=0.05$
+
+
+
+

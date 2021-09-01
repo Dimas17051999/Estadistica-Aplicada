@@ -1,0 +1,275 @@
+---
+title: "Regresión Lineal Multiple, filtro de datos y pruebas estadisticas "
+author: "DIMAS RAMIREZ LUIS DANIEL"
+date: "7/12/2020"
+output:
+  html_document: default
+  pdf_document: default
+editor_options: 
+  chunk_output_type: console
+---
+
+
+# Regresión Lineal Múltiple
+
+$$y_i=\hat{\beta}+\hat{\beta_2}x_{i2}+\hat{\beta_3}x_{i3}+...\hat{\beta_k}x_{ik}+\epsilon_i$$
+
+Formato de vectores y matrices 
+
+$$Y=X\beta+\epsilon$$
+
+La forma de calcular las betas es: 
+
+$$\hat{\beta}=(X´X)^{-1}X´Y$$
+
+Modelo básico con 2 betas: 
+
+```{r}
+library(lmtest)
+library(tseries)
+library(readxl)
+Base <- read_excel("Base de datos encuestas.xlsx")
+names(Base)
+
+P_A <- Base$`¿CUAL ES TU PROMEDIO ACTUAL EN LA CARRERA?` #y
+P_B <- Base$`¿CUAL FUE TU PROMEDIO DE BACHILLERATO?` #x
+
+P_A
+
+#Aquí esta definiendo la matriz, es el camino largo de hacerlo 
+M_A <- rep(NA, times=366*2)#matriz equis ampliada 
+dim(M_A) <- c(366,2)
+M_A[,1] <- 1
+M_A[,2] <- P_B
+
+```
+
+Calculo de las betas: 
+
+```{r}
+betas<- solve(t(M_A)%*%M_A)%*%t(M_A)%*%P_A
+betas
+#método largo, sigue sin ser necesario 
+# t= transpuesta 
+#para multiplicar las matrices se tiene que utilizar % * %
+# solve se utilizar para sacar la inversa 
+  
+lm(P_A~P_B)
+```
+
+
+
+Modelo múltiple: 
+
+```{r}
+#Filtrar datos 
+#0 y 1 hacen la Función indicadora
+
+lt<- Base$`33.	¿CUENTAS CON LAPTOP PROPIA?`
+lt[lt=="SI"] <- 1 #los corchetes indican que van a buscar dentro de lt los caracteres iguales con si y se le asignara el valor 1 
+lt[lt=="NO"] <- 0
+lt<- as.numeric(lt)
+
+
+```
+
+Modelo incluyendo si el estudiante tiene o no tiene laptop, análisis estadística para verificar que la variable es significativa 
+
+```{r}
+# as.factor funciona para denotar al 0 y 1 como presencia y ausencia de dato 
+ml_m1 <- lm(P_A~P_B+as.factor(lt))
+
+
+```
+
+$$C_A= 4.322 + 0.477P_B-0.000518LT $$
+
+Notamos que la variable de si tiene o no tiene laptop es casi cero 
+
+Checando el análisis estadístico de laptop 
+
+```{r}
+
+summary(ml_m1)
+plot(ml_m1)
+
+```
+ 
+ Del resumen notamos que $lt$ es una varaiable que no es representativa en el modelo debido a que  nuestra signifacancia es del 5% por que $\alpha /2 =$ 2.5%  y la probabilidad mostrada para $lt$ es de 0.99 por lo tanto se debe rechazar esa variable del modelo ya que no es representativa. Adicional a esto, notamos que R no muestra ningún asterisco que nos de indicio para tomarlo en cuenta.  
+
+
+# Modelo 2
+
+$$PA=\hat{\beta_1}+\hat{\beta_2}P_B+\hat{\beta_3}Sexo+\hat{\beta_4}Edad+\hat{\epsilon}$$
+
+Incluyendo sexo... 
+
+```{r include=FALSE}
+
+sexo <- Base$`¿CUAL ES TU SEXO BIOLOGICO?`
+
+sexo[sexo=="HOMBRE"]<- 0
+sexo[sexo=="MUJER"]<- 1
+
+sexo <- as.numeric(sexo)
+
+
+```
+
+Incluyendo edad... 
+
+```{r}
+edad <- Base$`¿CUAL ES TU EDAD?`
+
+#hist(edad)
+#summary(edad)
+
+
+```
+
+Paso 1 .- Generar el modelo (calculo de las $\beta$´s)
+
+```{r}
+ml4 <- lm(P_A ~ P_B + as.factor(sexo) + edad)
+summary(ml4)
+
+ ```
+
+Paso 2 Comprobar aleatoriedad de errores estimados (Prueba de Durbin Watson)
+
+```{r}
+ml4$residuals
+plot(ml4$residuals, type="l")
+plot(rnorm(366), type="l") 
+
+par(mfrow=c(2,1))
+plot(ml4$residuals, type="l")
+plot(rnorm(366), type="l")
+dev.off()
+```
+
+Pareciera que las distribuciones son muy parecidas por lo tanto se realiza la prueba Durbin Watson 
+
+La prueba de Durbin Watson nos permite saber si los errores son realmente variables aleatorias 
+
+Si la prueba Durbin Watson indica que la correlación es 0, es un buen modelo y no hay suficiente evidencia para rechazar la hipotesis nula 
+
+Si la prueba Durbin Watson indica que la correlación es diferente de 0, es un modelo que tiene un problema de variable omitida
+
+```{r}
+
+dwtest(ml4)
+
+```
+
+Si tomamos un $\alpha=0.5$
+
+$$H_0:\rho=0$$
+$$H_A:\rho\neq0$$
+
+Como $\alpha=0.5$ es más grande que p=0.00856, entonces existe __suficiente evidencia para rechazar__ $H_0$ entonces significa que entre los errores existe algo que los relaciona  
+
+Paso 3 Comprobar normalidad en los errores
+
+Si es variable aleatoria, ahora hay que comprobar que se comporta de forma normal 
+
+Estadístico de Jarque-Bera 
+
+Este estadistico verificia las varaibles, en este caso los erroes,  se comportan de manera normal o no 
+
+```{r}
+
+jarque.bera.test(ml4$residuals)
+
+```
+
+$H_0:Los~errores~son~normales$
+
+$H_A:Los~errores~no~son~normales$
+
+Como en el caso anterior, alfa es más grande que p, por lo que existe suficiente evidencia para rechazar la hipótesis nula 
+
+Paso 4 Comprobar que los errores son homocedasticos 
+
+Cuando los errores son homocedasticos para comprobar las hipotesis,la homocedasticidad tendera a 
+
+Si es homocedatisco, quiere decir que las varianzas quedan constantes y es un buen modelo confiable. 
+
+La heterosticidad va a tender a aceptar más la hipotesis nula por lo que no es un buen modelo 
+ 
+bpteste para hacer esta prueba 
+
+```{r}
+
+bptest(ml4)
+
+```
+
+Prueba Breusch-Pagan test
+
+$H_0:Los~errores~son~homocedasticos$
+
+$H_A:Los~errores~no~son~ homocedasticos$
+
+Como $\alpha $ es mayor que p, existe suficiente evidencia para rechazar la hipotesis nula por lo que los errores no son homocedasticos 
+
+
+```{r}
+
+summary(ml4)
+
+```
+
+Paso 5 
+
+$$H_0: \beta_1=\beta_2=\beta_3=\beta_4=0$$
+
+$$H_A:Alguna~ \beta_i\neq0 $$
+
+
+
+__p-value: < 2.2e-16__
+
+Como alfa es mayor que p, existe suficiente evidencia para rechazar la hipotesis nula
+
+Por lo tanto, por lo menos una de las betas es diferente de 0 
+
+Paso 6 
+
+$$H_0: \beta=k$$
+
+$$H_A: \beta \neq k$$
+
+
+Significa que edad y sexo no deben estar incluidas en el modelo
+
+Eso se hace checando la columna PR de la función summary 
+
+```{r}
+summary(ml4)
+
+ml4$coefficients
+```
+
+Paso 7  Coeficiente de determinación ajustado 
+
+El coeficiente ajustado penaliza el uso de variables espurias (variables no explicativas)
+
+Adjusted R-squared:  0.2174 
+
+El 21.74% de la varación en el promedio actual se debe a un cambio en las variables promedio bachillerato, sexo y edad, el resto se debe a V.A
+
+Paso 8 Intervalos de confianza de las betas 
+
+```{r}
+
+confint(ml4)
+
+```
+
+
+Paso 9 Prónosticos con Intervalos de Confianza 
+
+
+
+

@@ -1,0 +1,592 @@
+---
+title: "EXAMEN 2-Regresión Lineal"
+author: ""
+date: "16/12/2020"
+output:
+  pdf_document: default
+  html_document: default
+editor_options: 
+  chunk_output_type: console
+---
+
+$$Dimas ~Ramirez~ Luis ~Daniel$$
+
+$$Palma~Poce~Nayeli$$
+
+$$Peñaloza~Ponce~Nayeli$$
+
+
+# Examen 
+
+Anexamos un documento llamado "Análisis previo para examen 2" en el cuál realizamos de manera rápida las pruebas para cada varible. No encontramos ninguna que cumpliera con todas las pruebas, así que utilizamos las "mejores" según nuetras consideraciones que fueron: 
+
+- Ser una variable estadísticamente significativa 
+
+- cumpliera con al menos una de las pruebas entre Durbin-Watson, Jarque-Bera, Breusch-Pagan
+
+## 1.-Introducción 
+
+- a) Prueba Durbin-Watson 
+
+Esta prueba asume como hipótesis nula que la autocorrelación de los errores es 0. Buscar verificar que la covarianza entre los errores es cero, porque cuando se cumple eso se puede interpretar que las variables son aleatorias. Por lo tanto: 
+
+$$H_0:\rho=0~~,~~H_A:\rho\neq0$$
+
+También es posible realizar la prueba enfocado a la hipótesis alternativa especifiando que $\rho$ sea mayor, diferente o menor que $0$. Estas especifiaciones se pueden hacer con el argumento _alternative_ de la función.  
+
+El estadístico que utiliza esta prueba es: 
+
+$$DW=\frac{\sum_{t=2}^n (\hat u_t - \hat u_{t-1})^2}{\sum_{t=1}^n \hat u _t^2}$$
+
+James Durbin era un estadista y econometrista británico, realizaba estudios matemático en la Universidad de Cmabridge; estudios que fueron interrumpidos por la segunda gerra mundial. Fue presidente del Instituto Internacional de Estadísticacen 1985.
+
+Geoffrey Stuart Watson fue un estadista australiano.También participo en el desarollo de la prueba Wheeler-Watson para información ciclica. 
+
+En 1950 publicaron su primer paper introduciendo el estadístico Durbin-Watson.
+
+- b) Prueba Jarque-Bera 
+
+Esta prueba verifica que los erroes tiendan a distribuirse de manera normal, por lo tanto: 
+
+$$H_0:Los~datos~son~normales,~H_A:Los~datos~NO~son~normales$$
+
+ Cuando una varaible aleatoria se distribuye de manera normal, su tercer y cuarto momento alrededor de la media se conocen como sesgo y curtosis. Cuando el sesgo es igual a cero, quiere decir que la distribución es simétrica, mientras que la curtosis igual a cero, nos indica que la distribución es mesocúrtica o normal. 
+
+Las hipótesis, de manera más tecnica, quedan definidas como: 
+
+$$H_0:s=0,c=3~~y~~H_A:s\neq0~ó~c\neq 0 $$
+ 
+El estadístico que se utiliza es: 
+
+$$JB=T[\frac{\hat{cs}^2}{6}+\frac{(\hat{cc}-3)^2}{24}]$$
+
+Carlos Jarque Uribe es economista y actuario, ejecutivo en grandes corporativos y funcionario público mexicano. Fue presidente del INEGI de 1988-1999 , Secretario de Plan Nacional de Desarrollo de 1994-2000 y Secretario de Desarrollo Social de 1999-2000.
+
+
+
+Anil K. Bera es profesor de economía en la universidad de Illinois 
+
+- c) Prueba Breusch-Pagan
+
+Es una prueba para explorar si se cumple el supuesto de homocedasticidad de los errores en regresión lineal. Las hipótesis quedan definidas en: 
+
+$$H_0:Los~errores~son~homocedasticos~~y~~H_A:Los~errores~no~son~ homocedasticos$$
+
+El estadístico que utiliza es: 
+
+$$\hat u^2=\gamma_0+\gamma_1 x+v$$
+
+Esta prueba fue desarrollada en 1979 por Trevor Breusch, el cual fue un econometrista y profesor hasta su retiro en la Universidad Nacional Australiana. Adrian Rodney Pagan también es australiano, sin embargo el era economista y profesor en la Universidad de Sydney.
+
+## 2.-Modelo Lineal Múltiple Dos Variables (No Dicotómicas)
+
+- a) Propuesta con variable explicativa. 
+
+- b) Tres pronósticos del promedio actual con análisis.
+
+```{r}
+library(lmtest)
+library(tseries)
+library(readxl)
+base <- read_excel("F:/Estadistica aplicada/Base de datos encuestas.xlsx")
+#summary(base)
+
+```
+
+```{r}
+names(base)
+```
+
+Nuestra primer varible será "¿CUAL FUE TU PROMEDIO DE BACHILLERATO?", y la segunda  "¿CUANTAS MATERIAS HAS REPROBADO?" .
+
+__Paso 1__ 
+
+```{r}
+
+actual <- base$`¿CUAL ES TU PROMEDIO ACTUAL EN LA CARRERA?`
+reprobadas <- base$`¿CUANTAS MATERIAS HAS REPROBADO?`
+prepa <- base$`¿CUAL FUE TU PROMEDIO DE BACHILLERATO?`
+
+lm1<-lm(actual~reprobadas+prepa)
+#hist(base$`¿CUANTAS MATERIAS HAS REPROBADO?`)
+lm1
+
+plot(actual~reprobadas+prepa)
+abline(lm1)
+
+```
+
+El modelo quedaría descrito como 
+
+$$Y_i=\beta_1+\beta_2X_1+\beta_3X_2$$
+ Por lo tanto: 
+ 
+$$P_A=6.2261-0.1171(Materias Reprobadas)+0.2907(Promedio~Bachillerato)$$
+
+
+```{r}
+summary(lm1)
+```
+
+Observamos que para nuestra variable de $Materias ~Reprobadas$ :
+
+$$ Pr(>|t|) =<2e-16$$
+Y para $Promedio~Bachillerato$:
+
+$$Pr(>|t|) =1.92e-10$$
+Por lo tanto, hasta el momento las dos varaibles son estadísticamente significativas para nuestro modelo. 
+
+__Paso 2__ 
+
+- Durbin-Watson test
+
+```{r}
+dwtest(lm1)
+```
+
+La prueba Durbin Watson nos indica que $p-value = 0.003933$. Como $p\le\alpha$ existe suficiente evidencia para rechazar $H_0:\rho=0$. Por lo tanto no son variables aleatorias y hay algo que las relaciona. 
+
+__Paso 3__
+
+- Jarque-Bera test
+
+```{r}
+jarque.bera.test(lm1$residuals)
+```
+
+La prueba Jarque-Bera nos indica que $p-value=1.11e-15$. Como $p\le\alpha$ existe suficiente evidencia para rechazar $H_0: Los~errores~son~normales$
+
+__Paso 4__
+
+-Breusch-Paga test 
+
+```{r}
+  bptest(lm1)
+```
+
+La prueba Breusch-Pagan nos indica que $p-value = 0.05296$. Como $p\ge\alpha$ no existe suficiente evidencia para rechazar que $H_0:Los~ errores~ son~ homocedasticos $
+
+__Paso 5__
+
+- Verificar que todas las $\beta$´s son iguales a cero. 
+
+```{r}
+summary(lm1)
+```
+
+$p-value: < 2.2e-16$. Como $p\le \alpha$ nos indica que hay alguna $\beta \neq 0$ por lo tanto existe suficiente evidencia para rechazar $H_0:\beta_1=\beta_2=\beta_3=0$
+
+__Paso 6__ 
+
+Verificamos la información con base en la función summary en la que planteamos 
+
+$$H_0: \beta=k~~y~~H_A: \beta \neq k$$
+
+Observando la columna $Pr(>|t|)$ concluimos que no existe suficiente evidencia para rechazar la hipotésis nula y que la variable "Materias reprobadas" y "Promedio Bachillerato" son estadísticamente significativas.
+
+__Paso 7__
+
+- Coeficiente de determinación ajustada 
+
+Adjusted R-squared:  0.4142 
+
+El 41.42% de la varación en el promedio actual se debe a un cambio en las variables de materias reprobadas y promedio de bachillerato. El otro 58.58% se debe a variables aleatorias. 
+
+__Paso 8__ 
+
+- Intervalos de confianza
+
+```{r}
+confint(lm1)
+```
+
+Para las Materias Reprobadas existe un 95% de probabilidades que el coeficiente poblacional (real) se encuentre entre -0.14 y -0.097. Para el promedio de bachillerato, existe un 95% de probabilidades de que el coeficiente poblacional se encuentre entre 0.2 y 0.37.
+
+__Paso 9__
+
+- Prónosticos 
+
+1.-Un alumno de la FI tiene 2 materias reprobadas, hasta el día de hoy que se encuentra en quinto semestre y su promdio de bachillerato fue de 9.9. Por lo tanto su promedio actual, según nuestro modelo sería 
+
+```{r}
+mr <- 2
+prom_prepa <- 9.9
+prom_actual <- 6.22605-(0.11708*mr)+(0.29073*prom_prepa)
+prom_actual
+```
+
+Por lo tanto, su promedio actual será `r prom_actual`. 
+
+2.-Un segundo alumno tiene 4 materias reprobadas y se encuentra en noveno semestre, su promedio en bachillerato fue de 7.6. Por lo tanto su promedio actual, según nuestro modelo sería 
+
+```{r}
+mr2 <- 4
+prom_prepa2 <- 7.6
+prom_actual2 <-  6.22605-(0.11708*mr2)+(0.29073*prom_prepa2)
+prom_actual2
+```
+
+Por lo tanto, su promedio actual será `r prom_actual2`.
+
+3.-Un tercer alumno que apenas va en primer semestre quiere saber cual sería su promedio si para noveno semestre tiene ocho materias reprobadas, su promedio en bachillerato fue de 8. Por lo tanto su promedio sería, según nuestro modelo:
+
+```{r}
+mr3 <- 8
+prom_prepa3 <- 8
+prom_actual3 <-  6.22605-(0.11708*mr3)+(0.29073*prom_prepa3)
+prom_actual3
+```
+
+Por lo tanto, su promedio será `r prom_actual3`.
+
+En este caso, sí se esperaria que el hecho de tener varias materias reprobadas fuera prueba de un deficiente aprovechamiento acádemico que se ve reflejado en el promedio. Nuestro coeficiente de materias reprobadas es negativo por lo tanto es un buen indicador de nuestro planteamiento previo. Notamos que cuando cuando tenemos reprobada una materia, nuestro promedio se verá disminuido en 0.11708 con respecto al promedio original.
+
+\pagebreak
+
+## Modelo Lineal Múltiple dos variables (Dicotómicas)
+
+- a) Propuesta con variable explicativa. 
+
+- b) Tres pronósticos del promedio actual con análisis.
+
+Nuestra primer varible será "¿CUAL FUE TU PROMEDIO DE BACHILLERATO?", y la segunda  "¿Cuentas con alguna Beca?" .
+
+__Paso 1__
+
+```{r}
+beca <- base$`¿CUENTAS CON ALGUNA BECA?`
+beca[beca=="SI"]<-1
+beca[beca=="NO"]<-0
+becaa <- as.numeric(beca)
+
+lm2 <- lm(actual~prepa+as.factor(beca))
+lm2
+
+summary(lm2)
+```
+
+El modelo quedaría descrito como 
+
+$$Y_i=\beta_1+\beta_2X_1+\beta_3X_2$$
+
+ Por lo tanto: 
+ 
+$$P_A=4.6+0.42567(Promedio ~Bachillerat)+0.37483(Tiene~Beca)$$
+
+Observamos que para nuestra variable de $Promedio ~Bachillerato$ :
+
+$$ Pr(>|t|) =<2e-16$$
+
+Y para $Beca$:
+
+$$Pr(>|t|) =1.61e-10$$
+Por lo tanto, hasta el momento las dos varaibles son estadísticamente significativas para nuestro modelo. 
+
+__Paso 2__ 
+
+- Durbin-Watson test
+
+```{r}
+dwtest(lm2)
+```
+
+La prueba Durbin Watson nos indica que $p-value = 0.006466$. Como $p\le\alpha$ existe suficiente evidencia para rechazar $H_0:\rho=0$. Por lo tanto no son variables aleatorias y hay algo que las relaciona. 
+
+__Paso 3__
+
+- Jarque-Bera test
+
+```{r}
+jarque.bera.test(lm2$residuals)
+```
+
+La prueba Jarque-Bera nos indica que $p-value=0.0002734$. Como $p\le\alpha$ existe suficiente evidencia para rechazar $H_0: Los~errores~son~normales$
+
+__Paso 4__
+
+-Breusch-Paga test 
+
+```{r}
+  bptest(lm2)
+```
+
+La prueba Breusch-Pagan nos indica que $p-value = 0.01158$. Como $p\le\alpha$  existe suficiente evidencia para rechazar que $H_0:Los~ errores~ son~ homocedasticos $
+
+__Paso 5__
+
+- Verificar que todas las $\beta$´s son iguales a cero. 
+
+```{r}
+summary(lm2)
+```
+
+$p-value: < 2.2e-16$. Como $p\le \alpha$ nos indica que hay alguna $\beta \neq 0$ por lo tanto existe suficiente evidencia para rechazar $H_0:\beta_1=\beta_2=\beta_3=0$
+
+__Paso 6__ 
+
+Verificamos la información con base en la función summary en la que planteamos 
+
+$$H_0: \beta=k~~y~~H_A: \beta \neq k$$
+
+Observando la columna $Pr(>|t|)$ concluimos que no existe suficiente evidencia para rechazar la hipotésis nula y que la variable "Tiene Beca" y "Promedio Bachillerato" son estadísticamente significativas.
+
+__Paso 7__
+
+- Coeficiente de determinación ajustada 
+
+Adjusted R-squared:  0.2958
+
+El 29.58% de la varación en el promedio actual se debe a un cambio en las variables de promedio de bachillerato y si tiene Beca. El otro 70.42% se debe a variables aleatorias. 
+
+__Paso 8__
+
+- Intervalos de confianza
+
+```{r}
+confint(lm2)
+```
+
+Para el promedio de bacillerato, existe un 95% de probabilidades de que el coeficiente poblacional se encuentre entre 0.3356 y 0.5157. Mientras que para la variable de si tiene beca o no, existe un 95% de probabilidades de que el coeficiente poblacional se encuentre entre 0.26 y 0.486.
+
+__Paso 9__ 
+
+- Prónosticos 
+
+1.-Un alumno de segundo semestre al cual no le fue otorgado la beca, quieres saber su promedio si su promedio de bachillerato fue de 7.7
+2.-Un alumno de nuevo ingreso quiere saber cual sera su promedio en la carrera si le llegan a otorgar la beca. Su promedio de bachillerato fue de 9.3
+3.-Un alumno de nuevo ingreso quiere saber cual sera su promedio en caso de que le asignen una beca. SU promedio de bachillerato fue de 8.8.
+
+```{r}
+pb <- c(7.7, 9.3, 8.8)
+be <- c(0,1,1)
+prono1 <- 4.60029+(0.42567*pb)+(0.37483*be)
+prono11 <- round(prono1,2)
+```
+
+Los promedios serán:  `r prono11`
+
+De este modelo podriamos afirmar que el tener una beca influira en nuestro promedio actual. Es decir; si tengo una beca voy a tener un mejor promedio y viceversa. Sin embargo, dejando un poco el análisis estadístico, creemos que no es cierto. Probablemente tenerla sí ayude en algo, pero el hecho de no tenerla  no debería disminuir (en la mayoría de los casos) tu promedio actual en 0.37483.
+
+Utilizando las pruebas estadísticas también podriamos afirmar que aunque es una variable estadísticamente significativa, los errores no son aleatorios, normales,ni homocedasticos. 
+
+\pagebreak
+
+## Modelo Lineal Múltiple de Más de Dos Variables
+- a) Propuesta con variable explicativa. 
+
+- b) Tres pronósticos del promedio actual con análisis.
+
+Nuestra primer varible será "¿CUAL FUE TU PROMEDIO DE BACHILLERATO?", la segunda  "¿Cuantas materias inscribes en promedio al semestre?" y la tercera "¿Estudias y trabajas?"
+
+__Paso 1__ 
+
+```{r}
+materias <- base$`¿CUANTAS MATERIAS INSCRIBES EN PROMEDIO AL SEMESTRE?`
+
+trabaja <- base$`¿ESTUDIAS Y TRABAJAS?`
+trabaja[trabaja=="SI"] <- 1
+trabaja[trabaja=="NO"] <- 0
+trabaja <- as.numeric(trabaja)
+
+lm3 <- lm(actual~prepa+materias+as.factor(trabaja))
+lm3
+summary(lm3)
+```
+
+Observamos que para nuestra variable de $Materias~inscritas~al~semestre$ :
+
+$$ Pr(>|t|) = 0.00674$$
+
+Para $Promedio~Bachillerato$:
+
+$$Pr(>|t|) =< 2e-16$$
+
+Y para $Trabaja~ o~ no$:
+
+$$Pr(>|t|) = 0.01524$$
+
+Por lo tanto, hasta el momento las tres varaibles son estadísticamente significativas para nuestro modelo. Sin embargo, del análisis de la función summary podemos notar que las varaibles de las materias inscritas y el trabajo, son significativas en menor medida que el promedio de bachillerato.  
+
+__Paso 2__ 
+
+- Durbin-Watson test
+
+```{r}
+dwtest(lm3)
+```
+
+La prueba Durbin Watson nos indica que $p-value = 0.01373$. Como $p\le\alpha$ existe suficiente evidencia para rechazar $H_0:\rho=0$. Por lo tanto no son variables aleatorias y hay algo que las relaciona. 
+
+__Paso 3__
+
+- Jarque-Bera test
+
+```{r}
+jarque.bera.test(lm3$residuals)
+```
+
+La prueba Jarque-Bera nos indica que $p-value=0.02937$. Como $p\le\alpha$ existe suficiente evidencia para rechazar $H_0: Los~errores~son~normales$
+
+__Paso 4__
+
+-Breusch-Paga test 
+
+```{r}
+  bptest(lm3)
+```
+
+La prueba Breusch-Pagan nos indica que $p-value = 0.02924$. Como $p\le\alpha$  existe suficiente evidencia para rechazar que $H_0:Los~ errores~ son~ homocedasticos $
+
+__Paso 5__
+
+- Verificar que todas las $\beta$´s son iguales a cero. 
+
+```{r}
+summary(lm3)
+```
+
+$p-value: < 2.2e-16$. Como $p\le \alpha$ nos indica que hay alguna $\beta \neq 0$ por lo tanto existe suficiente evidencia para rechazar $H_0:\beta_1=\beta_2=\beta_3=0$
+
+__Paso 6__ 
+
+Verificamos la información con base en la función summary en la que planteamos 
+
+$$H_0: \beta=k~~y~~H_A: \beta \neq k$$
+
+Observando la columna $Pr(>|t|)$ concluimos que no existe suficiente evidencia para rechazar la hipotésis nula y que la variable "Promedio Bachillerato", "Materias promedio al semestre" y "Trabaja y Estudia" son estadísticamente significativas.
+
+__Paso 7__
+
+- Coeficiente de determinación ajustada 
+
+Adjusted R-squared:  0.2394
+
+El 23.94% de la varación en el promedio actual se debe a un cambio en las variables de promedio de bachillerato, catidad de materias al semetre y si trabaja y estudia. El otro 76.06% se debe a variables aleatorias. 
+
+__Paso 8__
+
+- Intervalos de confianza
+
+```{r}
+confint(lm3)
+```
+
+Para el promedio de bachillerato, existe un 95% de probabilidades de que el coeficiente poblacional se encuentre entre 0.35y 0.55. Mientras que para la variable de materias inscritas , existe un 95% de probabilidades de que el coeficiente poblacional se encuentre entre 0.009 y 0.056. Por último, para la variable de si trabaja y estudia,  existe un 95% de probabilidades de que el coeficiente poblacional se encuentre entre -0.32 y -0.034
+
+__Paso 9__ 
+
+- Pronósticos 
+
+1.-Un alumno que estudia y trabaja, mete en promedio 3 materias por semestre, quiere saber su promedio actual si su promedio en bachillerato fue de 9.5
+
+```{r}
+tra <- 1
+mat <- 3
+pr <- 9.5
+pronostico <- 4.41254+(0.44826*pr)+(0.03280*mat)-(0.17730*tra)
+pronosticor <- round(pronostico, 2)
+```
+
+El promedio de este alumno será de `r pronosticor`
+
+2.-Un alumno que solamente estudia, mete en promedio 7 materias por semestre, quiere saber su promedio actaul si su promedio fue de 8.5
+
+```{r}
+tra2 <- 0
+mat2 <- 7
+pr2 <- 8.5
+pronostico2 <- 4.41254+(0.44826*pr)+(0.03280*mat2)-(0.17730*tra2)
+pronostico2r <- round(pronostico2, 2)
+```
+
+El promedio de este alumno será de `r pronostico2r`
+
+3.-Un alumno que trabaja y estudia mete en promedio 4 materias por semestre, quiere saber su promedio actual si su promedio en bachillerato fue de 8.5
+
+```{r}
+tra3 <- 1
+mat3 <- 4
+pr3 <- 8.5
+pronostico3 <- 4.41254+(0.44826*pr3)+(0.03280*mat3)-(0.17730*tra3)
+pronostico3r <- round(pronostico3, 2)
+```
+
+El promedio de este alumno será de `r pronostico3r`
+
+4.-Un alumno que estudia y trabaja mete en promedio 7 materias por semestre, quiere saber su promedio actual si su promedio en bachillerato fue de 9
+
+```{r}
+tra4 <- 1
+mat4 <- 7
+pr4 <- 9
+pronostico4 <- 4.41254+(0.44826*pr4)+(0.03280*mat4)-(0.17730*tra4)
+pronostico4r <- round(pronostico4, 2)
+```
+
+
+El promedio de este alumno será de `r pronostico4r`
+
+Para este modelo esperariamos que la variable afirmativa en el caso de que estudie y trabaje, se vea reflejada de manera negativa en el desempeño academico lo cual es cierto, sin ambargo tenemos que recordar que aunque es una varaible estadísticamente significativa, no es suficientemente representativa. De igual manera pasa con las materias  que se inscriben por semestre. Tal vez en un modelo con solamente dos varaibles, tendría sentido, sin embargo para este modelo podemos hacer el anális de que se esperaria que si trabaja y estudia, y además mete 7 materias (son las máximas posibles en un semestre dentro de la FI ) su promedio se vería muy afectado a pesar de haber tenido un buen promedio en el bachillerato.
+En el pronostico 4 observamos que su promedio solamente se vio disminuido en 0.5 lo cual se ve un poco alejado de la realidad promedio pero no suena descabellado del todo. 
+
+\pagebreak 
+
+## Referencias 
+
+- __Durbin Watson Test.__ Recuperado el 15/12/2020 de: http://math.furman.edu/~dcs/courses/math47/R/library/lmtest/html/dwtest.html
+
+- __Durbin Watson Statistic.__ Recuperado el 15/12/2020 de: https://corporatefinanceinstitute.com/resources/knowledge/other/durbin-watson-statistic/
+
+- __Overview: James Durbin.__ Recuperado el 15/12/2020 de:  https://www.oxfordreference.com/view/10.1093/oi/authority.20110803095736356
+
+- __Overview: Geoffrey Stuart Watson.__ Recuperado el 15/12/2020 de: https://www.oxfordreference.com/view/10.1093/oi/authority.20110803121318164
+
+- __Pruebas de normalidad.__  Recuperado el 15/12/2020 de: https://rpubs.com/luisxsuper/normalidad_test
+
+- __Prueba de normalidad: Jarque Bera & Shapiro Wilks en RStudio__  Recuperado el 15/12/2020 de: https://www.youtube.com/watch?v=SFSg0EzzTUE
+
+- __Carlos Jarque__. Recuperado el 15/12/2020: https://es.wikipedia.org/wiki/Carlos_Jarque
+
+- __Trevor S. Breusch.__ Recuperado el 15/12/2020: https://en.wikipedia.org/wiki/Trevor_S._Breusch
+
+- __Adrian Pagan.__ Recuperado el 15/12/2020:https://en.wikipedia.org/wiki/Adrian_Pagan
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

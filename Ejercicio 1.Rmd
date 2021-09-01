@@ -1,0 +1,122 @@
+---
+title: "Ejemplo "
+author: "DIMAS"
+date: "23/9/2020"
+output:
+  html_document: default
+  pdf_document: default
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Ejemplo estaturas de la FI
+
+La Fi tiene una población de 9000 estudiantes, se quiere estimar el peso promedio.
+
+Crear la población, la cual es rectangulas con los siguientes parametros, a= 1.55, b=1.96
+
+```{r}
+#?runif
+N<- 9000
+a<- 1.55
+b<- 1.96
+
+Pob<- runif(N, a, b)
+hist(Pob, probability = TRUE)
+
+#View(Pob)
+
+```
+?runif
+#Muestreo 
+
+El coeficiente de confianza que el cliente establece es del 97%,  un error de 0.05 metros.
+
+Tamaño de la muestra
+
+$$ n=\frac{z_{\alpha/2}^2\sigma^2}{E^2} $$
+Como no conocemos $\sigma^2$ ¿cuál es la estrategia?
+
+Entonces se realiza un muestreo piloto y se estima $\sigma^2$ con $s^2$ y se obtiene el tamaño de la muestra 
+
+Tomamos un tamaño de muestra piloto $n_p=30$ elementos 
+
+#Muestreo piloto 
+```{r}
+np<- 30 #tamaño de la muestra
+mp<- round(sample(Pob, np, replace = FALSE),2) #Muestra piloto 
+mp
+
+s2 <- var(mp)
+s2
+
+```
+ El tamaño de la muetra es 
+ 
+$$ n=\frac{z_{\alpha/2}^2 S^2}{E^2} $$
+```{r}
+E<- 0.05
+n<- qnorm(0.985)^2*s2/E^2
+n
+```
+
+Como el tamaño de la muestra sugerida es muy pequeña `r ceiling(n)` elementos, se sugiere tomar un error $$E= 0.01$$
+```{r}
+E<- 0.01
+n<- qnorm(0.985)^2*s2/E^2  ##El valor de qnorm es el 97% + 1.5% de un lado de la distribucion 
+ceiling(n)
+```
+
+Con este cambio el tamaño de la muestra sugerida es `n`  ##ceiling es para que redondee
+
+##Tomar la muestra 
+```{r}
+muestra<- round(sample(Pob, ceiling(n)),2)
+muestra
+
+s<- sd(muestra)
+s2m<- var(muestra) 
+mm <- mean(muestra)
+mm
+Em<- qnorm(0.985)*s2/ceiling(n)^.5
+Em
+
+```
+
+Generar los intervalos de confianza (LI y LS)
+$$LI=\bar{x}-E$$
+$$LI=\bar{x}+E$$
+¿A que es igual el error?
+$$E=Z_{\alpha/2}s/\sqrt{n}$$
+Por lo tanto el intervalo de confianza es: 
+
+$$IC=\bar{x}\pm Z_{\alpha/2}s/\sqrt{n}$$
+```{r}
+LI<- mm-qnorm(0.985)*s/ceiling(n)^.5
+LS<- mm+qnorm(0.985)*s/ceiling(n)^.5
+
+LI
+LS
+```
+
+Por lo tanto la media real pero desconocida de la estatura de los esudiantes de la FI se ecuentra entre `r LI` y `r LS` con una probabilidad del 97%
+
+¿Sera cierto?
+
+Como tenemos los datos poblacionales, se calculara la media poblacioanl.
+```{r}
+mean(Pob)
+```
+
+
+
+
+###################ACUERDATE COMENTARLE AL PROFESOR QUE AL CORRER EL KNIT EN PDF, ME DICE QUE TENGO QUE INSTALAR LATEX O TINYTEX
+
+
+

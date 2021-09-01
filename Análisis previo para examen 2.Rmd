@@ -1,0 +1,276 @@
+---
+title: "Pruebas"
+author: "DIMAS RAMIREZ LUIS DANIEL"
+date: "16/12/2020"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+# Análisis rápido de las varaibles 
+
+## Variables explicativas 
+
+```{r}
+library(lmtest)
+library(tseries)
+library(readxl)
+base <- read_excel("Base de datos encuestas.xlsx")
+
+pa <- base$`¿CUAL ES TU PROMEDIO ACTUAL EN LA CARRERA?`
+
+a <- base$`27.	¿CUANTO GASTAS SEMANALMENTE EN COSAS RELACIONADAS CON LA ESCUELA?`
+b <- base$`30.	¿CUANTOS HIJOS TIENES?`
+c <- base$`32.	¿CUANTAS HORAS DIARIAS DUERMES EN PROMEDIO?`
+d <- base$`¿CUAL ES TU EDAD?`
+e <- base$`¿CUAL FUE TU PROMEDIO DE BACHILLERATO?`
+f <- base$`¿CUAL ES TU AVANCE DE CREDITOS?`
+g <- base$`¿CUANTAS MATERIAS INSCRIBES EN PROMEDIO AL SEMESTRE?`
+h <- base$`¿CUANTAS MATERIAS HAS REPROBADO?`
+i <- base$`¿CUANTAS HORAS AL DIA, PASAS EN PROMEDIO EN LA FACULTAD?`
+j <- base$`¿CUANTAS HORAS EN PROMEDIO, LE DEDICAS A ESA ACTIVIDAD POR SEMANA?`
+k <- base$`¿CUANTAS HORAS AL DIA TE TOMA TRANSPORTARTE A LA ESCUELA?`
+l <- base$`¿CUANTAS PERSONAS HABITAN CONTIGO?`
+m <- base$`¿CUANTAS HORAS A LA SEMANA TRABAJAS?`
+n <- base$`¿CUAL ES EL INGRESO PROMEDIO MENSUAL DE TU FAMILIA?`
+ol <- base$`¿CUANTAS VECES AL MES CONSUMES ALCOHOL?`
+
+```
+
+-  Probando rápidamente cada variable explicativa  
+
+```{r}
+lma <- lm(pa~a)
+lma
+#summary(lma)
+#dwtest(lma)
+#jarque.bera.test(lma)
+bptest(lma)
+
+lmb <- lm(pa~b)
+lmb
+#summary(lmb)
+dwtest(lmb)
+#jarque.bera.test(lmb)
+bptest(lmb)
+
+lmc <- lm(pa~c)
+lmc
+#summary(lmc)
+#dwtest(lmc)
+#jarque.bera.test(lmc)
+bptest(lmc)
+
+lmd <- lm(pa~d)
+lmd
+summary(lmd)
+#dwtest(lmd)
+#jarque.bera.test(lmd)
+#bptest(lmd)
+
+lme <- lm(pa~e)
+lme
+summary(lme)
+#dwtest(lme)
+#jarque.bera.test(lme)
+#bptest(lme)
+
+lmf <- lm(pa~f)
+lmf
+summary(lmf)
+#dwtest(lmf)
+#jarque.bera.test(lmf)
+#bptest(lmf)
+
+
+lmg <- lm(pa~g)
+lmg
+summary(lmg)
+#dwtest(lmg)
+#jarque.bera.test(lmg)
+bptest(lmg)
+
+lmh <- lm(pa~h)
+lmh
+summary(lmh)
+#dwtest(lmh)
+#jarque.bera.test(lmh)
+bptest(lmh)
+
+lmi <- lm(pa~i)
+lmi
+#summary(lmi)
+#dwtest(lmi)
+#jarque.bera.test(lmi)
+bptest(lmi)
+
+lmj <- lm(pa~j)
+lmj
+summary(lmj)
+#dwtest(lmj)
+#jarque.bera.test(lmj)
+bptest(lmj)
+
+lmk<- lm(pa~k)
+lmk
+#summary(lmk)
+#dwtest(lmk)
+#jarque.bera.test(lmk)
+bptest(lmk)
+
+lml <- lm(pa~l)
+lml
+#summary(lml)
+#dwtest(lml)
+#jarque.bera.test(lml)
+#bptest(lml)
+
+lmm <- lm(pa~m)
+lmm
+summary(lmm)
+#dwtest(lmm)
+#jarque.bera.test(lmm)
+bptest(lmm)
+
+lmn<- lm(pa~n)
+lmn
+summary(lmn)
+dwtest(lmn)
+#jarque.bera.test(lmn)
+bptest(lmn)
+
+lmol <- lm(pa~ol)
+#lmol
+#summary(lmol)
+#dwtest(lmol)
+#jarque.bera.test(lmo)
+#bptest(lmo)
+```
+
+## Variables dicotómicas 
+
+```{r}
+p <- base$`28.	¿TE ENCUENTRAS EN UNA RELACION CON ALGUNA PERSONA?`
+p[p=="SI"] <- 1
+p[p=="NO"] <- 0
+pp <- as.numeric(p)
+
+q <- base$`29.	¿TIENES HIJOS?`
+q[q=="SI"] <- 1
+q[q=="NO"] <- 0
+qq <- as.numeric(q)
+
+r <- base$`¿TE GUSTA TU CARRERA?` 
+r[r=="SI"] <- 1
+r[r=="NO"] <- 0
+rr <- as.numeric(r)
+
+s <- base$`¿REALIZAS ALGUNA ACTIVIDAD EXTRACURRICULAR?`
+s[s=="SI"] <- 1
+s[s=="NO"] <- 0
+ss <- as.numeric(s)
+
+t <- base$`¿ERES FORANEO?`  
+t[t=="SI"] <- 1
+t[t=="NO"] <- 0
+tt <- as.numeric(t)
+
+u <- base$`¿CUENTAS CON HABITACION PROPIA?`
+u[u=="SI"] <- 1
+u[u=="NO"] <- 0
+uu <- as.numeric(u)
+
+v <- base$`¿ERES RESPONSABLE DE ALGUNA MASCOTA?`
+v[v=="SI"] <- 1
+v[v=="NO"] <- 0
+vv <- as.numeric(v)
+
+w <- base$`¿CUENTAS CON ALGUNA BECA?`  
+w[w=="SI"] <- 1
+w[w=="NO"] <- 0
+ww <- as.numeric(w)
+
+x <- base$`¿ESTUDIAS Y TRABAJAS?`
+x[x=="SI"] <- 1
+x[x=="NO"] <- 0
+xx <- as.numeric(x)
+
+```
+
+- Probando rápidamente cada variable dicotomica 
+
+```{r}
+lmp <- lm(pa~as.factor(pp))
+lmp
+summary(lmp)
+#dwtest(lmp)
+#jarque.bera.test(lmp)
+bptest(lmp)
+
+lmq<- lm(pa~qq)
+lmq
+#summary(lmq)
+#dwtest(lmq)
+#jarque.bera.test(lmq)
+bptest(lmq)
+
+lmr<- lm(pa~r)
+lmr
+#summary(lmr)
+#dwtest(lmr)
+#jarque.bera.test(lmr)
+bptest(lmr)
+
+lms<- lm(pa~s)
+lms
+summary(lms)
+#dwtest(lms)
+#jarque.bera.test(lms)
+bptest(lms)
+
+lmt<- lm(pa~t)
+lmt
+summary(lmt)
+#dwtest(lmt)
+#jarque.bera.test(lmt)
+bptest(lmt)
+
+lmw<- lm(pa~w)
+lmw
+summary(lmw)
+dwtest(lmw)
+#jarque.bera.test(lmw)
+bptest(lmw)
+
+lmx <- lm(pa~x)
+lmx
+summary(lmx)
+dwtest(lmx)
+#jarque.bera.test(lmx)
+bptest(lmx)
+
+```
+
+
+__Dedspués de hacer todas las pruebas, concluimos que las variables que tomaremos en cuenta serán "¿Cuántas materias inscribes al semestre?", "¿Cuántas horas trabajas?", "¿Cuántas materias has reprobado?", "¿Realizas alguna actividad extracurricular?", "¿Tienes beca?", "¿Estudias y trabajas?"__ bajo el criterio de que al menos es una varaible estadísticamente significativa y pasa alguna  de las tres pruebas entre Durbin-Watson, Jarque-Bera y Breusch-Pagan.
+
+
+
+
+
+First column name  | Second column name 
+-------------------|------------------
+Row 1, Col 1       | Row 1, Col 2 
+Row 2, Col 1       | Row 2, Col 2
+
+First name | Last name 
+-----------|------------
+1          |2
+
+
+
+
+
+
+

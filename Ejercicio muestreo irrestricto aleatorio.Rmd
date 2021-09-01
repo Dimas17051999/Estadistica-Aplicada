@@ -1,0 +1,260 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+editor_options: 
+  chunk_output_type: console
+---
+---
+title: "Muestreo Irrestricto"
+author: "DIMAS"
+date: "21/10/2020"
+output: html_document
+
+
+#Ejemplo de muestreo irrestricto 
+
+La varianza poblacional es $$\sigma^2=20^2$$
+
+Se desea estimar el tamaño de la muestra de una población $N=1000$ elementos, con un error de $B=$$ y una confianza del $CC=95\%$ si se sabe que la varianza pobalcional es $\sigma^2=20^2$
+
+```{r}
+N <- c(1000)
+Varpob <- c(20^2)
+alpha <- 0.05
+B <- 4 
+D <- B/qnorm(0.975)
+
+n<- N*Varpob/(D^2*(N-1)+ Varpob)
+
+```
+ El tamaño de la muestra es `r ceiling(n)`
+ 
+#porque el nivel de significancia es 95%, el valor de alpha es 5% pero el valor de alpha medios es 2.5% por eso se le suma al 95% solamente un 2.5% y nos da qnorm(0.975)
+
+Ahora se quiere saber la diferencia si la población fuera finita, por lo tanto 
+
+```{r}
+n_2 <- qnorm(.975)^2*Varpob/B^2
+```
+
+El tamaño de la muestra si la población fuera infinita es `r ceiling(n_2)`
+
+#Ejemplo 2: Muestreo irrestricto 
+
+Suponga que se les asignan a diez personas calcular el tamaño de la muestra de una población que se
+distribuye de forma normal, suponga también que conoce la media poblacional la cual es de 70 y su varianza poblacional
+la cual es de 100. El tamaño de la población es de 10,000 elementos y el límite para el error es de 3. 3⁄4Cuáles serían
+algunos de los posibles tamaños de muestra que obtendrían estas diez personas? Suponga que cada uno de ellos toma un
+muestreo piloto de 30 elementos de forma aleatoria para estimar la varianza poblacional. Tome un nivel de signicancia
+del 5 %.
+#Ya que no hay varianza, se toma una muestra poblacional 
+__Nota: en este caso no se genera la población, dado que se supondra que los parametros son los mismos que ya se establecieron para $\mu$ y para $\sigma^2=100$__
+
+```{r}
+#Estudiante uno (rnorm) random numbers with normal distribution
+m_1 <- rnorm(30, mean=70, sd=100^0.5)
+#Estudiante dos
+m_2 <- rnorm(30, mean=70, sd=100^0.5)
+#Estudiante tres
+m_3 <- rnorm(30, mean=70, sd=100^0.5)
+#Estudiante cuatro
+m_4 <- rnorm(30, mean=70, sd=100^0.5)
+#Estudiante cinco
+m_5 <- rnorm(30, mean=70, sd=100^0.5)
+#
+m_6 <- rnorm(30, mean=70, sd=100^0.5)
+
+m_7 <- rnorm(30, mean=70, sd=100^0.5)
+
+m_8 <- rnorm(30, mean=70, sd=100^0.5)
+
+m_9 <- rnorm(30, mean=70, sd=100^0.5)
+
+m_10 <- rnorm(30, mean=70, sd=100^0.5)
+
+matriz_m <- data.frame(m_1, m_2, m_3, m_4,m_5, m_6, m_7, m_8, m_9, m_10) #matriz de muestras
+#View(matrizdemuestras)
+
+matriz_m
+
+
+```
+
+Calculo de las varianzas muestrales para cada una de las muestras.
+
+```{r}
+
+
+var_muestras <- apply(matriz_m,2, var) #el 2 significa que va a trabajar sobre las columnas 
+
+```
+
+Calculo del tamaño de las muestras 
+```{r}
+
+N <- 10000   #Tamaño de la población finita
+B<- 3 #Error dado en el enunciado
+D <- B/qnorm(0.975)
+n <- var_muestras*N/((N*D^2)+var_muestras)
+
+```
+
+Etapa 2: Muestreo y estimacion de la media poblacional 
+
+
+
+```{r}
+n_1 <- rnorm(n[1], 70, 10)
+n_2 <- rnorm(n[2], 70, 10)
+n_3 <- rnorm(n[3], 70, 10)
+n_4 <- rnorm(n[4], 70, 10)
+n_5 <- rnorm(n[5], 70, 10)
+n_6 <- rnorm(n[6], 70, 10)
+n_7 <- rnorm(n[7], 70, 10)
+n_8 <- rnorm(n[8], 70, 10)
+n_9 <- rnorm(n[9], 70, 10)
+n_10 <- rnorm(n[10], 70, 10)
+
+
+```
+
+
+Estimación puntual de $\mu$ a traves de medias_muestrales
+
+```{r}
+mm1 <- mean(n_1)
+mm2 <- mean(n_2) 
+mm3 <- mean(n_3)
+mm4 <- mean(n_4)
+mm5 <- mean(n_5)
+mm6 <- mean(n_6)
+mm7 <- mean(n_7)
+mm8 <- mean(n_8)
+mm9 <- mean(n_9)
+mm10 <- mean(n_10)
+
+vmm <- c(mm1, mm2, mm3, mm4, mm5, mm6, mm7, mm8, mm9, mm10)
+```
+
+Generar los intervalos de confianza 
+
+  Limite inferior y superior
+```{r}
+
+
+LI <- vmm-3
+LS <- vmm+3
+
+IC<- data.frame(LI, LS )
+View(IC)
+```
+
+Calculo del coeficiente de cnfianza para cada muestra
+
+$$z_{\alpha/2}= \frac{B}{\sqrt{\frac{s^2}{n}(\frac{N-n}{n-1})}}$$
+
+
+```{r}
+vm1 <- var(n_1)
+vm2 <-  var(n_2) 
+vm3 <-  var(n_3)
+vm4 <-  var(n_4)
+vm5 <-  var(n_5)
+vm6 <-  var(n_6)
+vm7 <-  var(n_7)
+vm8 <-  var(n_8)
+vm9 <-  var(n_9)
+vm10 <-  var(n_10)
+
+vvm <- c(vm1, vm2, vm3, vm4, vm5, vm6, vm7, vm8, vm9, vm10) #vector de varianzas muestrales 
+
+```
+
+Calculo de $z_{\alpha/2}$
+```{r}
+zalpha_2 <- B/(vvm/n*(N-n))^0.5
+
+```
+
+Calculo de los coeficientes de confianza 
+
+```{r}
+CC <- (pnorm(zalpha_2)-pnorm(-zalpha_2))*100        #Porque me salen 1? Deberian salir menores a 1 
+
+IC<- data.frame(LI, LS, CC, vvm) #Entre mayor varianza, el coeficiente de confianza disminuye 
+
+IC
+
+CC>95
+
+```
+
+##Proporciones 
+La proporción de una muestra 
+
+En proporciones la varianza propocional es $$\sigma^2=pq$$  donde $q=1-p$
+
+y la varizana muestral es $$s^2=\hat{p}\hat{q}$$
+
+
+Suponga que hara una encuesta ver si los estudiantes de la FI de la UNAM ya se han adaptado al nuevo modelo de enseñanza en línea. Se sabe que la población es de $N=14,000$ estudiantes. Se solicita una confianza del 97% y un error del 2%.
+
+Calcule el tamaño de la  muestra n para este estudio. 
+
+$$n=\frac{\hat{p}\hat{q}N}{D^2(N-1)+\hat{p}\hat{q}}$$
+Donde 
+
+$$D=\frac{B}{z_{\alpha/2}}$$
+```{r}
+
+N1 <- 14000 #Estudiantes 
+B1 <- 0.02 #Error
+z.97 <- qnorm(0.97+0.03/2)
+
+D1 <- B1/z.97
+D1
+
+
+```
+Si tomamos la varianza más alta 
+
+Con p $p^*=0.5$ la varianza más alta $s^{2*}=p^*(1-p^*)=0.5(1-0.5)=0.25$
+```{r}
+pm <- 0.5 #proporcion que calcula la varianza más estimada
+
+n <- pm*(1-pm)*N/(D1^2*(N-1)+pm*(1-pm))
+```
+
+Creación de la población 
+
+```{r}
+
+respuesta <- c(rep(1, times=4000), rep(0, times=10000))
+hist(respuesta)
+
+
+
+muestra_mia <- sample(respuesta, n)
+hist(muestra_mia)
+
+
+pestimada <-sum(muestra_mia)/n
+
+preal <- 4000/14000
+
+LI <- pestimada-B1
+LS <- pestimada+B1
+
+s2estimada <- pestimada*(1-pestimada)
+
+```
+ De que tamaño hubiera sido la muestra si se toma esta varianza estiamda 
+ 
+```{r}
+pestimada*(1-pestimada)*N/(D1^2*(N-1)+pestimada*(1-pestimada))
+```
+
+
+
+

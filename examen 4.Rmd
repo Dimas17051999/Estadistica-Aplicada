@@ -1,0 +1,257 @@
+---
+title: "Examen 4"
+author: ''
+date: "3/2/2021"
+output:
+  pdf_document: default
+  html_document: default
+editor_options:
+  chunk_output_type: inline
+---
+
+$$Dimas ~Ramirez~ Luis ~Daniel$$
+
+$$Palma~Ponce~Adriana~Lizeth$$
+
+$$Peñaloza~Ponce~Nayeli$$
+
+\pagebreak
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Primero vamos a preparar los datos para utilizarlos en los ejercicios. 
+A nuestro equipo le toco
+
+```{r}
+
+library(dplyr)
+library(readxl)
+base <- read_excel("F:/7mo semestre/Estadistica aplicada/SO2.xls")
+#head(base)
+b <- select(base,FECHA, HORA,SFE,TAH)
+b$SFE[b$SFE == -99] <- mean(b$SFE[b$SFE != -99])
+b$TAH[b$TAH ==-99] <- mean(b$TAH[b$TAH != -99])
+
+head(b)
+str(b$FECHA)
+Table <- data.frame(months.POSIXt(b$FECHA),b$HORA,b$SFE,b$TAH )
+
+Table1 <- subset(Table, months.POSIXt.b.FECHA.== "septiembre")
+head(Table1)
+
+```
+
+# Ejercicio 1 .- Prueba de signos 
+
+__Escoger un día de la semana y un punto de inspección para realizar una prueba de signos.__ 
+
+Ahora crearemos una data frame específico para este ejercicio, solamente consideramos una estación correspondiente a Cuajimalpa (SFE) y las filas 360:384 porque son las 24  horas del 15/09/2019. Primero sacaremos la mediana del mes de septiembre para utilizarlo como $H_0$.
+
+```{r}
+eje0 <- data.frame(Table1$months.POSIXt.b.FECHA., Table1$b.SFE)
+summary(eje0)
+```
+
+Del código anterior obtenemos que la mediana del mes deseptiembre fue $1$
+
+Por lo tanto se desea probar $H_0:\hat \mu=1 ~;~H_A:\hat \mu\neq1$ con $\alpha=0.05$
+
+Finalmente, realizando el procedimiento para aplicar la prueba de signos
+```{r}
+med1 <- 1
+eje1 <- data.frame(Table1$months.POSIXt.b.FECHA., Table1$b.SFE)
+a <- eje1$Table1.b.SFE[360:384]
+
+b <- length(a[a>med1])
+b
+
+c <- length(a[a==med1])
+c
+
+d<- length(a)-c
+d
+
+binom.test(b,d)
+```
+
+Valor $P=0.88$; por lo tanto no existe suficiente evidencia para rechazar la hipótesis nula.
+
+Al inicio del planteamiento de este ejericio se planteo la posibilidad de que, debido a que es un dia festivo y patriotico para México, podría existir mayor movilidad vehicular y de emisores de este contaminante, por lo tanto habría una mayor cantidad de S02 reflejada en la mediana del 15 de Septiembre comparada con la mediana del año en general, sin embargo con la Prueba de los signos, notamos que no existe suficiente evidencia para apoyar nuestro planteamiento teórico, si no que la mediana del día 15-Septiembre es muy seguramente igual a la mediana de todo el año. 
+
+# Ejercicio 2.- Prueba de signos pareados 
+
+__Escoger dos días consecutivos y hacer una prueba de hipotésis con prueba de signos pareada.__
+
+Para este inciso, continuaremos con la línea del planteamiento anterior. Sin embargo aquí buscaremos saber si la mediana del día 15-Sept y 16-Sept (con los registros la estación de Cuajimalpa) son iguales. De inicio esperaríamos nuevamente que las medianas no sean iguales, debido a que el 15 es un día bastante activo refiriendonos a movilidad y el 16 al ser un día festivo, de manera general, hay menos movilidad debido a que la gente descansa. Entonces el equipo espera que la prueba nos indique que existe suficiente evidencia para rechazar la $H_0$
+
+Por lo tanto nuestras hipotésis, con un nivel de significancia de 0.05 quedarían definidas como: 
+
+$$H_0:\hat \mu_1 - \hat \mu_2 = 0 $$
+
+$$H_A:\hat \mu_1 - \hat \mu_2 \neq 0 $$
+
+```{r}
+e <- eje1$Table1.b.SFE[360:384]
+f <- eje1$Table1.b.SFE[384:408]
+g <- e-f
+g
+
+med2 <- 0
+
+h <- length(g[g>med2])
+i<- length(g[g=med2])
+j <- length(g)-i
+
+binom.test(h, j )
+```
+
+Valor $P=0.88$; por lo tanto no existe suficiente evidencia para rechazar la hipótesis nula.
+
+Este resultado nos indica que la mediana del registro de SO2 es el mismo tanto el 15 como el 16 de septiembre. 
+
+# Ejercicio 3.- Prueba de Rangos con Signos de Wilcoxon 
+
+__Usando los mismos datos del anterior, usar la prueba de Wilcoxon__
+
+Para esta prueba estableceremos la hipotésis de que los dos días pertenecen población esperando que la prueba nos indique que existe suficiente evidencia para rechazar la hipotésis. 
+
+
+```{r}
+wilcox.test(e,f, paired = TRUE)
+```
+
+A un nivel de significancia de 0.05 y con un $p-value = 0.0001434$ podemos concluir que existe sufuciente evidencia para rechazar la hipotésis nula, por lo tanto, las emisiones de S02 registradas en la estación de monitoreo de Cuajimalpa el día 15 y 16 de Septiembre corresponden a diferentes poblaciones. 
+
+# Ejercicio 4.- Kruskal-Wallis 
+
+__Realizar pruebas de Kruskal-Wallis para observar si existen diferencias entre la concentración de SO2 entre los meses del año 2019__
+
+Para este ejercicio utilizaremos la información correspondiente a Tlahuac, y elegimos la hora pico para realizar la prueba, las 15:hrs.
+
+Nuetra hipotésis nula para este caso es 
+
+$H_0:$El SO2 es idéntico a través de los meses durante el 2019 
+
+```{r}
+eje4 <- data.frame(Table$months.POSIXt.b.FECHA., Table$b.HORA ,Table$b.TAH)
+Table4 <- subset(Table, b.HORA == 15 )
+#Table4
+names(Table4) <- c("Mes", "HORA","SFE","TAH")
+head(Table4)
+
+kruskal.test(SFE~Mes, data=Table4)
+```
+
+Con un $p-value = 6.391e-05$, existe suficiente para rechazar la hipotésis nula, por lo tanto el registro de SO2 fue el mismo durante el 2019 en la estación de Tlahuac. 
+
+# Ejercicio 5.- Prueba de Rachas 
+
+__Empleando los datos del ejercicio uno realizar la prueba de rachas para determinar si la concentración de SO2 en un día es una varaible aleatoria__
+
+$H_0:$ Los registros de SO2 en la unidad de Cuajimalpa en el mes de septiembre son variables aleatorias.
+
+En este ejercicio esperariamos que las varibles no sean aleatorias, es decir, que exista suficiente evidencia para rechazar la hipotésis nula lo cual nos indicaría indicios de un posible fenomeno que explique el comportamiento de los datos. 
+
+```{r}
+library(tseries)
+a
+
+runs.test(as.factor(a>median(a)))
+```
+
+Con un $p-value = 2.008e-05$ y a un nivel de significancia del 0.05 existe suficiente evidencia para rechzar la hipotésis nula, por lo tanto los registros no son variable aleatorias y tienen un comportamiento que podría ser estudiado para explicarlo.
+
+# Ejercicio 6.- Prueba de Kolmogorov-Smirnov
+
+__Empleando los datos del ejercicio 4, hacer una prueba de  Kolmogorov-Smirnov, proponga tres distribuciones de probabilidad que se pueda ajustar a los datos. Realizar un histograma con los datos.__
+
+Primero denominamos una variable con todos los datos de la estación Cuajimalpa a las 15 horas del mes de septiembre, y propusimo s 3 distribuciones y comparamos cada una. 
+
+$H_O:$ Las poblaciones responden a la misma distribución de probabilidad.
+
+```{r}
+eje6 <- Table4$SFE
+#str(eje6)
+x<- runif(365)
+y<- rnorm(365)
+z<- rf(365,1,10)
+```
+
+## Primero comparamos los datos de la estación con una distribución Uniforme 
+
+```{r}
+par(mfrow=c(1,2))
+hist(eje6, col="Blue", main="Datos Cuajimalpa", xlab="Emisión SO2")
+hist(x, col="Red", main="Distribución Uniforme")
+
+ks.test(eje6, x)
+```
+
+Como p-value = 0.009683, existe suficiente evidencia para rechzar la hipotésis nula, es evidente que las distribuciones no son las mismas.
+
+## Segundo,  comparamos los datos de la estación con una distribución Normal 
+
+```{r}
+par(mfrow=c(1,2))
+hist(eje6, col="Blue", main="Datos Cuajimalpa", xlab="Emisión SO2")
+hist(y, col="Yellow", main="Distribución Normal")
+
+ks.test(eje6, y)
+```
+
+Como p-value < 2.2e-16, existe suficiente evidencia para rechzar la hipotésis nula, por lo que las distribuciones no son las mismas.
+
+## Por último,  comparamos los datos de la estación con una distribución Fisher
+
+
+```{r}
+par(mfrow=c(1,2))
+hist(eje6, col="Blue", main="Datos Cuajimalpa", xlab="Emisión SO2")
+hist(z, col="Green", main="Distribución Fisher")
+
+ks.test(eje6, z)
+```
+
+Como p-value < 2.2e-16, existe suficiente evidencia para rechzar la hipotésis nula, por lo que las distribuciones no son las mismas sin embargo, de manera gráfica podría parecer que sí se aproximan. 
+
+# Ejercicio 7.- Prueba de Correlación de Rangos 
+
+__Con los datos del ejercicio dos realizar una prueba de correlación de rangos__
+
+Para este ejercicio esperariamos que exista suficiente evidencia para rechazar la hipotésis nula, lo cual nos indicaría que sí existe una correlación entre un día y otro, y nuevamente existe un fenomeno que explica la relación entre el 15 y 16 de septiembre en la emisión de S02 en la estación de Cuajimalp
+
+$$H_0:\rho=0$$
+
+```{r}
+#e vector donde están localizados los valores del 15 de Septiembre
+#f vector donde están localizados los valores del 16 de Septiembre
+
+cor.test(e,f, method = "spearman")
+```
+ 
+ Como el valor es p-value = 0.002759 y a un valor de significacia del 0.05,  existe suficiente evidencia para rechazar la hipotésis nula y por lo tanto sí existe correlación entre un día y otro. 
+ 
+# Conclusión General 
+
+Debido al escenario que planteamos, podemos concluir que a pesar de que el 15 de Septiembre es un día festivo y se creyó que las emisiones de S02 podrían ser mayores, no es así comparado con la mediana de las emisiones en el año 2019. Por otro lado, comparando el 15 y 16 de septiembre prácticamente no hay diferencia estadísticamente significativa para afirmar que no son iguales las emisiones de un día respecto al otro. No logramos encontrar una distribución que se asemeje a la de nuestros datos para esta estación en específico, sin embargo de manera gráfica logramos asemejarla a una distribución F~Fisher. 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

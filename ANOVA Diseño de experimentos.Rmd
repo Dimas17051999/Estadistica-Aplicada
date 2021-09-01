@@ -1,0 +1,284 @@
+---
+title: "ANOVA Diseño de experimentos"
+author: "DIMAS RAMIREZ LUIS DANIEL"
+date: "6/1/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+#Diseño de experimentos 
+
+## Ejemplo 1
+
+```{r}
+library(agricolae)
+#rnorm random generation for the normal distribution with mean equal to mean and standard deviation equal to sd. 
+a <- rnorm(10, 40, 5)
+b <- rnorm(10, 35, 5)
+c <- rnorm(10, 45, 5)
+d <- rnorm(10, 50, 5)
+
+datos <- data.frame(a,b,c,d)
+datos <- round(datos, 2)
+datos
+#View(datos)
+
+#Preparar datos para ANOV 
+```
+
+Preparación de los datos 
+
+```{r}
+VP <- c(a,b,c,d) #poner todos los datos en una sola línea (en un solo vector )
+id <-c("A","B","C","D")           #identificador para los datos
+idt <- rep(id, each=10)    #repites el id cada 10 veces porque hay 10 datos de A, 10 de B, etc. 
+
+datos1 <- data.frame(idt, VP)
+names(datos1)<- c("idt", "Valor")
+datos1
+
+```
+
+Solución 
+
+```{r}
+#soliucion 1, anova con la funcion aov()
+#?aov
+s1 <- aov(Valor ~ idt, data=datos1)
+s1
+
+summary(s1)
+```
+
+Como Pr(>F) =5.3e-08 nos damos cuenta que F< $\alpha$ por lo tanto cae en la zona de rechazo y hay suficiente evidencia para rechazara la hipótesis nula 
+
+3 asteriscos significan que distingue que al menos una de las $\thao$ es diferente. Un punto significa que sí distingue que hay diferencia de $\thao$.  
+
+Buscamos que no existira nigún asterico ni punto en el summary, lo cual nos indicaria que todas las $\thao$ son iguales y los tratamientos son válidos. 
+
+
+
+Diagrama de caja 
+
+```{r}
+boxplot(datos1$Valor ~ datos1$idt, col="Blue", main="Diagrama de caja")
+abline(h=45)
+```
+
+## Método LSD 
+
+Para conocer que tratamientos son diferentes 
+
+```{r}
+?LSD.test
+
+LSD.test(s1, "idt", console = TRUE)
+```
+
+
+Treatments with the same letter are not significantly different.
+
+     Valor groups
+D 49.72782      a
+C 44.91306      a
+A 40.00829      b
+B 34.35882      c
+
+___Por lo tanto los gurpos C y D son grupos similares. Los grupos A y B son grupos que son significantemente diferentes  ___
+
+## Método Tukey 
+
+Para conocer que tratamientos son diferentes 
+
+```{r}
+
+TukeyHSD(s1)
+
+```
+
+
+Auí debemos fijarnos en estas dos columnas........$\alpha=0.05$
+
+
+B-A  0.1009825 como p adj$>\alpha$, podemos afirmar que no existe suficiente evidencia para rechazar $H_0$ y B-A no son diferentes
+C-A  0.1860082 como p adj$>\alpha$, podemos afirmar que no existe suficiente evidencia para rechazar $H_0$ y C-A no son diferentes
+D-A  0.0013074 como p adj$<\alpha$, podemos afirmar que SÍ existe suficiente evidencia para rechazar $H_0$ y D-A son diferentes
+C-B  0.0004708 como p adj$<\alpha$, podemos afirmar que SÍ existe suficiente evidencia para rechazar $H_0$ y C-B son diferentes
+D-B  0.0000010 como p adj$<\alpha$, podemos afirmar que SÍ existe suficiente evidencia para rechazar $H_0$ y D-B son diferentes
+D-C  0.1991873 como p adj$>\alpha$, podemos afirmar que no existe suficiente evidencia para rechazar $H_0$ y d-c no son diferentes
+
+En este caso no hay conclusión porque hay contradicción 
+
+## Método Duncan
+
+```{r}
+duncan.test(s1, "idt", console = TRUE)
+```
+
+
+De igual manera nos interesa ver el cacho de código es 
+
+Means with the same letter are not significantly different.
+
+   
+D 49.72782      a
+C 44.91306      a
+A 40.00829      b
+B 34.35882      c
+
+C y D no son signficantemente diferentes , mientras que A y B sí son significantemente diferentes. 
+
+Parece ser que el anova es la prueba más potente, sin embargo anova solamente te dice si hay alguna difernete. Pero LSD, tukey son menos potentes pero te dicen por cada par cual podría ser diferente. 
+
+
+# DISEÑO DE EXPERIMENTOS CON Modelos de bloques/ bloqueos  completos 
+
+__Este modelo considera al diseño de experimentos + 1 bloqueo__
+
+```{r}
+Trat <- c("I", "II", "III", "IV")
+Trat <- rep(Trat, each=20)
+
+num <- c(1:20)
+num <- rep(num, times=4)
+
+trats <- paste(Trat, num)
+
+prueba <- sample(trats, 80, replace= FALSE)
+
+
+```
+
+Se busca que todos los trabajadores hagan el mimso número de pruebas para cada tratamiento para distribuir el efecto que queremos bloquear 
+
+Buscamos el mejor tratamiento no al mejor trabajador 
+
+Asignación de tratamiento a cada trabajador sin hacer el bloque 
+
+```{r}
+Trat1 <- c("I", "II", "III", "IV")
+Trab <- c("TI", "T2", "T3", "T4")
+
+Trat1 <- sample(Trat1, 80, replace=TRUE)
+Trab <- sample(Trab, 80, replace=TRUE)
+
+tabla <- data.frame(Trat1, Trab)
+
+table(tabla$Trat1) 
+table(tabla$Trab)
+```
+
+
+Si se incrementa el cuadrado medio del error del tratamiento o bloque, en el cociente entre el cuadrado medio del error se hace tan grande que podría decrirnos que no se rechaza la hipotesis nula y caer en un error tipo II  que es acpetar la H0 cuando es falsa
+
+
+# Modelo de cuadrados latinos 
+
+__Este modelo considera al diseño de experimentos + 2 bloqueos__
+
+
+
+# Modelo de cuadrados grecolatinos 
+
+__Este modelo considera al diseño de experimentos + 3 bloqueos__
+
+
+
+# Diseño factorial $2^k$
+
+```{r}
+datos <- matrix(c(560,590,679,640,643,591,652,625,1047,1042,759,858,1085,1053,719,870), byrow= TRUE, ncol = 2)
+dim(datos) <- c(8,2)
+
+datos
+
+A <- rep(c(-1,1),4)
+B <- rep(c(-1,-1,1,1),2)
+C <- c(rep(-1,4), rep(1,4))
+
+Total <- apply(datos, 1, sum)
+
+cbind(A,B,C,datos, Total)
+
+datos1 <- matrix(c(560,590,679,640,643,591,652,625,1047,1042,759,858,1085,1053,719,870), byrow= TRUE, ncol=2)
+datoss <- c(560,590,679,640,643,591,652,625,1047,1042,759,858,1085,1053,719,870)
+Af <- rep(as.factor(A), rep(2,8))
+Bf <- rep(as.factor(B), rep(2,8))
+Cf <- rep(as.factor(C), rep(2,8))
+
+tablaa <- data.frame(Af, Bf, Cf, datos1)
+
+datosml <- lm(datoss~Af*Bf*Cf)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

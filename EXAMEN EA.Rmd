@@ -1,0 +1,459 @@
+---
+title: "Examén de EA"
+author: 'DIMAS RAMÍREZ LUIS DANIEL #315334731'
+date: "8/11/2020"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+editor_options:
+  chunk_output_type: console
+---
+
+
+# l) Responda las siguientes cuestiones
+
+- a) ¿Cuál es la diferencia entre una distribución muestral y una distribución de probabilidad?
+
+La distribución muestral resulta de considerar todas las muestras posibles que pueden ser tomadas de una población.
+
+La distribución de probabilidad surge de la muestra tomada de la población y están identicamente distribuidas.
+
+- b) ¿Cuál es la diferencia entre error estándar y el error de muestreo y cómo se relacionan?
+^2
+El error estandar o también conocido como "desviación estandár" provienen de la varianza $\sigma=\sqrt\sigma^2$ , nos da información de la dispersión de los datos.
+
+El error estándar es un error estimado que es probable que cometamos en nuestra estimación.
+
+No se relacionan de manera directa. 
+ 
+- c) Si se toma una muestra aleatoria ¿ésta es representativa?
+
+Depende de si es no es representativa. Si es muy pequeña, no sera representativa y depende de cual sea el tamaño de nuestra población.
+
+- d) ¿Cuáles son las características de un buen estimador? Describa cada una de ellas.
+
+Insesgado: Cuando se obtiene una estimación puntual de un parametro.$E(\bar{x})=\mu$
+
+Eficiente: que tenga una varianza minima, lo cuál indicara que el la dispersión de los datos es poca 
+
+Suficiente: quiere decir que el estimador sí toma en cuenta toda la información de la muestra, no necesitamos de otro estimador. 
+
+Consistente: aquel cuyo error de medida o sesgo se aproxima a cero
+- e) ¿Por qué muestreamos?
+
+La mayoría de las poblaciones que analizamos suelen ser demasiado grandes como para ser analizadas completamente (censar), o porque no se cuentan con los recursos suficientes.
+
+# ll) Responda los siguientes ejercicios 
+
+## Ejercicio 1 
+
+Para la siguiente población calcule el tamaño de la muesra con un error de muestreo $B=5$ y un coeficiente de confianza $cc=95%$ de una población infinita, estime $s^2$ con un muestreo piloto con $n=30$ elementos, consideres una población rectangular _runif_ con $100,000$ elementos $a=50$ y $b=100$
+
+```{r}
+a <- 50
+b <- 100
+pob1 <- runif(100000, a, b)
+hist(pob1)
+```
+
+$$ n=\frac{z_{\alpha/2}^2\sigma^2}{B^2} $$
+Tomando n=30 del muestreo piloto 
+```{r}
+mp1 <- 30
+n_piloto1 <- sample(pob1, mp1)
+
+
+s2piloto1 <- round(var(n_piloto1), 2)
+s2piloto1
+
+```
+
+- $s^2$ = `r s2piloto1`
+
+```{r}
+B1 <- 5
+alpha1 <-  qnorm(0.975)
+n1 <- alpha1^2*s2piloto1/B1^2
+n1c <- ceiling(n1)
+```
+
+
+- $n=$  `r n1c`
+
+## Tuve que haber vuelto a sacar todo z, no con qnorm, sino despejar de toda la formula
+$$Z_{\alpha/2}=\frac{\sqrt n Z}{s}$$
+Manteniendo el error $B = 5$ calcule el nuevo coeficiente de confianza y los límites inferior LI y límite superior LS.
+
+El nuevo CC estara definido por: 
+```{r}
+m1 <- sample(pob1, n1c)
+varm1 <- var(m1)
+
+```
+
+
+$$Z_{\frac{\alpha}{2}}=\sqrt{\frac{nE^2}{\sigma^2}}$$
+```{r}
+cc1 <- (n1c*25/s2piloto1)^0.5
+cc1
+```
+
+- $CC$ = 97.61%
+
+```{r}
+x1 <- mean(n_piloto1)
+x1
+li1 <- x1-5
+ls1 <- x1+5
+```
+
+- $LI=$ `r li1`
+
+- $LS=$ `r ls1`
+
+Manteniendo la confianza en CC = 95% calcule el nuevo error y construya los intervalos de confianza.
+
+El nuevo error estara definido como: 
+
+$$B=\sqrt{\frac{Z_{\frac{\alpha}{2}}\sigma^2}{n}}$$
+
+```{r}
+bnuevo1 <- (qnorm(0.975)*s2piloto1/n1c)^0.5
+bnuevo1
+```
+
+- $B=$ `r bnuevo1`
+```{r}
+li1nuevo <- x1-bnuevo1
+ls1nuevo <- x1+bnuevo1
+```
+
+- $LI=$ `r li1nuevo`
+
+- $LS=$ `r ls1nuevo`
+
+$$IC=\bar{x}+- z_{\alpha/2}s/\sqrt{n}$$
+
+
+- $IC = $ `r x1` $\pm$  `r bnuevo1`
+
+## Ejercicio 2 
+
+Para una población con $17,000$ elementos calcular el tamaño de la muestra, la población tiene una media $\mu = 75$ y una $\sigma = 10$. Utilice un muestreo piloto con n = 30 elementos para calcular $s^2$  y obtener el tamaño de la muestra para un nivel de error B = 4 y un CC = 97%.
+
+```{r}
+mediapob2 <- 75
+sd2 <- 10
+pob2 <- rnorm(17000, mediapob2, sd2)
+hist(pob2)
+s22 <- var(pob2)
+
+mp2 <- sample(pob2, 30)
+s2piloto2 <- var(mp2)
+
+```
+
+
+- $s^2=$ `r s2piloto2`
+
+$$ n=\frac{z_{\alpha/2}^2\sigma^2}{B^2} $$
+
+```{r}
+n2 <- qnorm(0.985)*s2piloto2/16
+n2r <- ceiling(n2)
+```
+
+
+- $n=$ `r n2r`  ___El tamaño de la muestra es muy pequeño___
+
+Manteniendo el error B = 4 calcule el nuevo coeficiente de confianza y los límites inferior LI y límite superior LS.
+
+El nuevo CC estara definido por: 
+
+$$Z_{\frac{\alpha}{2}}=\sqrt{\frac{nE^2}{\sigma^2}}$$
+```{r}
+aplha2 <- (n2r*16/s2piloto2)^0.5
+aplha2
+```
+
+- $CC$ 93.45%
+
+```{r}
+x2 <- mean(mp2)
+li2 <- x2 - 4
+ls2 <- x2+4
+```
+
+- $LI=$ `r li2`
+
+- $LS=$ `r ls2`
+
+Manteniendo la confianza en CC = 97% calcule el nuevo error B y construya los intervalos de confianza.
+
+El nuevo error estara definido como: 
+
+$$B=\sqrt{\frac{Z_{\frac{\alpha}{2}}\sigma^2}{n}}$$
+```{r}
+b2 <- (qnorm(0.985)*s2piloto2/n2r)^0.5
+b2
+li2nuevo <- x2-b2
+ls2nuevo <- x2+b2
+```
+
+- $B=$ `r b2`
+
+- $LI=$ `r li2nuevo`
+
+- $LS=$ `r ls2nuevo`
+
+## Ejercicio 3 
+
+Calcule el tamaño de la muestra para las proporciones de una población finita de 30,000 elementos con un error del B1 = 1% ,B2 = 2% y B3 = 5% y un CC = 93%
+
+$$n = \frac{\hat{p}\hat{q}N}{(N-1)D^2+\hat{p}\hat{q}}$$
+$$D=\frac{B}{Z_{\frac{\alpha}{2}}}$$
+```{r}
+N <- 30000
+
+p3 <- 0.5 #proporcion que calcula la varinaza más alta 
+pq3 <- p3*(1-p3)
+
+z3 <- qnorm(.965)
+
+b13 <- 0.01
+b23 <- 0.02
+b33 <- 0.05
+
+d13 <- b13/z3
+d23 <- b23/z3
+d33 <- b33/z3
+
+n13 <- (pq3*N)/(((N-1)*d13^2)+pq3)
+n23 <- pq3*N/((N-1)*d23^2+pq3)
+n33 <- pq3*N/((N-1)*d33^2+pq3)
+
+```
+
+- $n_1=$ `r n13`
+
+- $n_2=$ `r n23`
+
+- $n_3=$ `r n33`
+
+
+
+## Ejercicio 4 
+
+Para una población con $s_{1}^{2} = 40$, $s_2^2 = 20$ y $s_3^2 = 10$ y $N_1 = 20,000,~ N_2 =15,000~ y~ N_3 = 12,000$ con un error de B = 3 y un CC = 93%. Calcular el tamaño de la muestra total y el que corresponde a cada estrato.
+
+$$n = \frac{s^2N}{(N-1)D^2+s^2}$$
+
+$$D=\frac{B}{Z_{\frac{\alpha}{2}}}$$
+
+
+
+```{r}
+D4 <- 3/ qnorm(0.965)
+
+s14 <- 40
+s24 <- 20
+s34 <- 10
+
+N14 <- 20000
+N24 <- 15000
+N34 <- 12000
+
+n14 <- s14*N14/((D4^2*(N14-1))+s14)
+n24 <- s24*N24/((D4^2*(N24-1))+s24)
+n34 <- s34*N34/((D4^2*(N34-1))+s34)
+
+n14r <- ceiling(n14)
+n24r <- ceiling(n24)
+n34r <- ceiling(n34)
+
+n14r
+n24r
+n34r
+
+ntotal4 <- sum(n14r, n24r, n34r)
+```
+
+- $n_1=$ `r n14r`
+
+- $n_2=$ `r n24r`
+
+- $n_3=$ `r n34r`
+
+- $n_{Total}=$ `r ntotal4`
+
+
+
+## Ejercicio 5 
+
+Para una población con $s_1^2 = 45, s_2^2 = 15$ y $s_3^2 = 12$ y $N_1 = 20,000, N_2 =15,000$ y $N_3 = 12,000$ con un error de B = 2 y un CC = 97%, si los costos $c_1 = 1, c_2 =2 ~y~ c_3 = 0.5$. Calcular el tamaño de la muestra total y el que corresponde a cada estrato.
+
+```{r}
+b5 <- 2
+z5 <- qnorm(0.985)
+varianza5 <- c(45, 15, 12)
+costosi5 <- c(1,2,0.5)
+N5 <- c(20000,15000,12000)
+
+D5 <- b5/z5
+
+nm5 <- sum(N5*varianza5^.5*costosi5^.5)*sum(N5*varianza5^.5/costosi5^.5)/(sum(N5)^2*D5+sum(N5*varianza5))
+nmc5<- ceiling(nm5)
+est5<-nm5*(N5*varianza5^.5/costosi5^.5)/sum(N5*varianza5^.5/costosi5^.5)
+etrc5<-ceiling(est5)
+```
+
+Respuesta 1: El n total es de `r nmc5`
+
+Respuesta 2: El numero de muestras por cada estrato es de `r etrc5`
+
+## Ejericio 6 
+
+Donald Trump sostenía durante campaña que sus seguidores son mejores que los seguidores de Joe Biden en todos los sentidos, incluso en su estatura, afirmando que la altura promedio de los republicanos es de 1.90 metros. Considerando una población de 15,000 republicanos con parámetros a = 1.65 y b = 1.99 y CC = 95% ¿Se puede afirmar que es correcto el comentario de Donald Trump? Mostrar su procedimiento.
+
+$$CC=95\%$$
+```{r}
+
+pob6 <- runif(15000, 1.65, 1.99)
+hist(pob6) 
+
+mu06 <-1.90
+
+```
+
+- $H_0: \mu=1.90m$
+- $H_A: \mu\neq1.90m$
+
+Tomando una muestras cualquiera
+
+```{r}
+ncualquiera6 <- sample(pob6, 1000)
+```
+
+Calculando $\bar{x}$ de esa muestra: 
+
+```{r}
+x6 <- mean(ncualquiera6)
+sd6 <- sd(ncualquiera6)
+```
+ De esta muestra podemos notar que la media muestral es `r x6`
+ 
+Construyendo los intervalos de confianza para saber si existe evidencia suficiente para rechazar la hipótesis nula es: 
+$$LIR=\mu_0-z_{\alpha/2}s/\sqrt{n}$$
+$$LSR=\mu_0+z_{\alpha/2}s/\sqrt{n}$$
+
+```{r}
+li6 <-  mu06- ((qnorm(0.975)*sd6)/1000^0.5)
+ls6 <- mu06 + ((qnorm(0.975)*sd6)/1000^0.5)
+
+li6r <- round(li6, 2)
+ls6r <- round(ls6, 2)
+```
+
+- $LI=$ `r li6r`
+
+- $LS=$ `r ls6r`
+
+- $\bar{x}=$ `r x6`
+
+ Como el LI es `r li6r` y el LS es `r ls6r` y la media muestral es $\bar{x} =$ `r x6`; y no se encuentra dentro de los límites ___no existe suficiente evidencia para afirmar la___ $H_0=1.90$ ___del Sr Donald Trump___
+
+## Ejercicio 7 
+
+Después de sus controversiales comentarios sobre la estatura de sus votantes, el equipo de campaña de Donald Trump decidió destinar recursos para determinar la estatura promedio de los demócratas y demostrar que efectivamente son de menor estatura que los republicanos. Se tiene una población de 10,000 demócratas con parámetros a = 1.65 y b = 1.99, con un coeficiente de confianza CC = 96% y un error de B = 0.075. Determine el tamaño de muestra que se debe extraer de la población y cúal sería el intervalo de confianza en el que se encuentra la estatura promedio de los demócratas.
+
+$$cc=96\%~y~B=0.075$$
+
+```{r}
+pob7 <- runif(10000, 1.65, 1.99)
+hist(pob7) 
+```
+
+Para determinar n primero sacare una muestra pilto de n=1,000
+
+```{r}
+npiloto7 <- sample(pob7, 1000)
+s27 <- var(npiloto7)
+s27 #varianza muestral
+x7 <- mean(npiloto7)
+x7 #media muestral
+sd7 <- sd(npiloto7)
+sd7 #desvacion estandar muestral
+```
+
+$$ n=\frac{z_{\alpha/2}^2\sigma^2}{B^2} $$
+Calculando n...
+
+```{r}
+b7 <- 0.075
+alpha7 <- qnorm(0.98)
+
+n7 <- alpha7^2*s27/b7^2
+n7r <- ceiling(n7)
+```
+
+
+
+- $n_T=$ `r n7r`
+
+Construyendo los límites inferiores y superiores...
+
+$$LIR=\bar{x}-z_{\alpha/2}s/\sqrt{n}$$
+
+
+$$LSR=\bar{x}+z_{\alpha/2}s/\sqrt{n}$$
+
+```{r}
+li7 <- x7 - ((qnorm(0.98)* sd7)/1000^0.5)
+ls7 <- x7 + ((qnorm(0.98)* sd7)/1000^0.5)
+
+li7r <- round(li7, 2)
+ls7r <- round(ls7, 2)
+```
+
+
+- $LI=$ `r li7r`
+
+- $LS=$ `r ls7r`
+
+___Por lo tanto podemos concluir que la estatura promedio de los democratas y de los republicanos es muy similar___
+
+## Ejercicio 8
+
+El equipo de campaña de Trump sabe que los comentarios de Donald Trump han mermado su aprobación a unos días de las elecciones y quieren saber en que proporción. Para hacerlo deciden aplicar una encuesta vía internet para conocer su aprobación en una escala del 1 al 100, siendo 100 la mejor calificación posible. Se tiene el correo de 350,000 personas de Texas, 550,000 personas de Wisconsin, 200,000 personas de Arkansas y 400,000 personas de California.
+
+Por ejercicios similares se determinó que la varianzas en las calificaciones para cada
+estado son de $s_{Tex}^2=20, s_{Wis}^2=36, s_{Ark}^2=13, s_{Cal}^2=57$, respectivamente. Por la importancia de los votos de cada estado en el colegio electoral se tienen las siguientes fracciones asignadas wTex = 25%, wWis = 25%, wArk = 10% y wCal = 40%. Con un nivel de significancia de α = 5% y un error de B = 1.5 ¿Cuál sería el tamaño de la muestra a la que tienen que aplicar la encuesta y cuántas personas de cada estado?
+
+
+$$n=\frac{\sum \frac{N^2\sigma^2}{w_i}}{N^2D+\sum N\sigma^2 }$$
+
+$$D=\frac{B}{Z_{\alpha/2}^2}$$
+
+```{r}
+b8 <- 1.5
+alfa8 <- qnorm(0.975)
+varianza8 <- c(20, 36, 13, 57)
+costos8 <- c(0.25, 0.25, 0.1, 0.4)
+N8 <- c(350000,550000,200000,400000)
+
+d8 <- b8/alfa8
+
+ntotal8 <- sum((N8^2*varianza8/costos8)/(sum(N8)^2*d8^2+sum(N8*varianza8)))
+ntotal18r <- ceiling(ntotal8)
+
+nestra8 <- ceiling(ntotal18r*costos8)
+  
+```
+
+- $n_T=$ `r ntotal18r`
+
+- $n_{Tex}, n_{Wis}, n_{Ark}, n_{Cal}=$   `r nestra8`
+
+
+

@@ -1,0 +1,30 @@
+---
+title: "Muestreo Estratificad0"
+author: "DIMAS"
+date: "4/11/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Muestreo estatificado
+
+Una poblacion con 10,000 personas con 80% hombres y 20% mujeres.
+
+```{r}
+H <- rep("H", times=8000)
+M <- rep("M", times=2000)
+pob <- c(H, M)
+table(pob)
+
+```
+Suponga que realizara un muestreo para saber la opinion de esta población sobre el tema de seguridad. Suponga también que conoce el tamaño de la muestra n=300
+
+```{r}
+muestra <- sample(pob, 300)
+table(muestra)/300*100
+
+```
+

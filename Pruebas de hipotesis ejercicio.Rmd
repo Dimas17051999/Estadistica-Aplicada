@@ -1,0 +1,178 @@
+---
+title: "Pruebas de Hipotesis"
+author: "DIMAS"
+date: "12/10/2020"
+output:
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: console
+---
+
+Ejemplo 1 
+
+Crear una población de alumnos de la FI.
+N=9000
+Se distribuye de manera uniforme con parametros a=1.55, b =1.95 
+
+```{r}
+N<- 9000
+a<-1.55
+b<-1.95
+
+pob_2 <- runif(N, a, b)
+
+hist(pob_2)
+```
+
+Mi supuesto de que $\mu_0=1.82m$
+
+¿Qué debo hacer para comprobarlo?
+
+___Paso1:___
+
+Declarar las hipótesis 
+
+- $H_0: \mu=1.82m$
+- $H_A: \mu\neq1.82m$
+
+___Paso2:___
+
+Tomar una muestra con $n\geq30$ elementos, por ejemplo $n = 300$
+```{r}
+n_300 <- sample(pob_2, 300)
+
+```
+
+
+___Paso 3:___
+
+Calcular $\bar{x}$
+Se calcula le media de los 300 alumnos de la muestas
+
+```{r}
+x_barra<- mean(n_300)
+x_barra
+
+```
+La media muestras es $\bar{x}$ `r round(x_barra,2)` #para que muestre el valor de la variable, es necesario agregar r()
+ No es igual a mi $\mu_0=1.82m$. Sin embargo esto no es suficiente evidencia para decir que mi suspuesto es incorrecto. En otras palabras esto no es suficiente evidencia para rechazar $H_0$
+ 
+ ___Paso 4:____
+ Verificar si la diferencia es estadísticamente significativa entre $\mu_0$ y la $\mu_a=$ `r round(x_barra,2)`
+
+___Paso 5:___
+
+$LIR=\mu_0-z_{\alpha/2}s/\sqrt{n}$
+$LSR=\mu_0+z_{\alpha/2}s/\sqrt{n}$
+
+```{r}
+s_300<- sd(n_300)
+
+LIR<-1.82-qnorm(.975)*s_300/300^0.5
+LSR<-1.82+qnorm(.975)*s_300/300^0.5
+LIR
+LSR
+```
+
+___Paso 6:___
+Como $\bar{x}$ `r round(x_barra,2)`, no se encuentra entre `r round(LIR,2)` y `r  round(LSR,2)`, existe suficiente evidencia para rechazar $H_0$
+
+
+
+#Ejemplo 2 
+
+Haga su mejor supuesto $\mu_0=1.70$
+Con un tamaño de muestra de $n=200$ elementos y un $CC=90\%$
+
+
+```{r}
+n_200<- sample(pob_2, 200)
+
+x_barra2 <- round(mean(n_200),2)
+x_barra2
+s_200<- sd(n_200)
+
+LIR<-1.70-qnorm(.95)*s_200/200^0.5
+LSR<-1.70+qnorm(.95)*s_200/200^0.5
+LIR
+LSR
+
+```
+
+Explicacion de la prueba de hipotesis 
+
+Error tipo 1 
+Error tipo 2: es la probabilidad de aceptar $H_0$ cuando era falsa
+
+```{r}
+ee<-2
+MU<-5
+x<- seq(0,15, by=.1)
+plot(x, dnorm(x, MU, ee), type="l", xlim=c(0,20))
+
+MU0<- 10
+plot(x, dnorm(x, MU0, ee), type="l", xlim=c(0,20))
+
+par(mfrow=c(2,1))
+plot(x, dnorm(x, MU, ee), type="l", xlim=c(0,15))
+abline(v=6, col="Red")
+plot(x, dnorm(x, MU0, ee), type="l", xlim=c(0,15))
+abline(v=6, col="Red")
+
+```
+
+
+
+ee<-.5
+MU<-5
+x<- seq(0,15, by=.1)
+plot(x, dnorm(x, MU, ee), type="l", xlim=c(0,20))
+
+MU0<- 10
+plot(x, dnorm(x, MU0, ee), type="l", xlim=c(0,20))
+
+par(mfrow=c(2,1))
+plot(x, dnorm(x, MU, ee), type="l", xlim=c(0,15))
+abline(v=6, col="Red")
+plot(x, dnorm(x, MU0, ee), type="l", xlim=c(0,15))
+abline(v=6, col="Red")
+
+
+ee<-.25
+MU<-5
+x<- seq(0,15, by=.1)
+plot(x, dnorm(x, MU, ee), type="l", xlim=c(0,20))
+
+MU0<- 10
+plot(x, dnorm(x, MU0, ee), type="l", xlim=c(0,20))
+
+par(mfrow=c(2,1))
+plot(x, dnorm(x, MU, ee), type="l", xlim=c(0,15))
+abline(v=6, col="Red")
+plot(x, dnorm(x, MU0, ee), type="l", xlim=c(0,15))
+abline(v=6, col="Red")
+
+
+
+
+
+ee<-.25
+MU<-5
+x<- seq(0,15, by=.1)
+plot(x, dnorm(x, MU, ee), type="l", xlim=c(0,20))
+
+MU0<- 6
+plot(x, dnorm(x, MU0, ee), type="l", xlim=c(0,20))
+
+par(mfrow=c(2,1))
+plot(x, dnorm(x, MU, ee), type="l", xlim=c(0,15))
+abline(v=5.5, col="Red")
+plot(x, dnorm(x, MU0, ee), type="l", xlim=c(0,15))
+abline(v=5.5, col="Red")
+
+___Error tipo 1: ___ Rechazar la hipotesis nula cuando debia ser aceptada y se mide su porbabilidad  con $\alpha$
+___Error tipo 2: ___ Aceptar la hipotesis nula cuando debio rechazarse y se mide su probabilidad con $\beta$
+
+
+

@@ -1,0 +1,232 @@
+---
+title: "Estadística NO parametrica"
+author: "DIMAS RAMIREZ LUIS DANIEL"
+date: "25/1/2021"
+output: html_document
+---
+$
+## Prueba de signos 
+
+# Ejercicio 1 
+
+```{r}
+x1 <- c(1.5,2.1,0.8,1.2,1.9,1.5,1.7,1.4,1.9,1.1,1.6)
+x1
+length(x1)
+
+```
+
+$$H_0:Mediana=1.7$$
+```{r}
+v <- 1.7 #mediana
+a <- length(x1[x1>v])
+a
+
+b <- length(x1[x1==v])
+b
+
+d <- length(x1)-b
+d
+
+binom.test(a,d)
+
+```
+
+# Ejercicio 2 
+
+```{r}
+llr <- c(4.2,4.7,6.6,7.0,6.7,4.5,5.7,6.0,7.4,4.9,6.1,5.2,5.7,6.9,6.8,4.9)
+
+llc <- c(4.1,4.9,6.2,6.9,6.8,4.4,5.7,5.8,6.9,4.9,6.0,4.9,5.3,6.5,7.1,4.8)
+
+auto_n <- c(1:16)
+length(llr)
+length(llc)
+
+d <- data.frame(auto_n, llr, llc)
+d
+
+dif.ll1 <- llr-llc
+dif.ll2 <- llc-llr
+```
+
+$$H_0: Mediana_1-Mediana_2=0$$
+```{r}
+
+#con dif.ll1
+v1 <- 0 
+mayores <- length(dif.ll1[dif.ll1>v1])
+
+iguales <- length(dif.ll1[dif.ll1==v1])
+
+diferentes_0 <- length(dif.ll1)-iguales
+
+binom.test(mayores, diferentes_0)
+
+```
+
+```{r}
+#con dif.ll2
+
+v2 <- 0 
+mayores2 <- length(dif.ll2[dif.ll2>v2])
+
+iguales2 <- length(dif.ll1[dif.ll2==v2])
+
+diferentes_02 <- length(dif.ll2)-iguales2
+
+binom.test(mayores2, diferentes_02)
+```
+
+# Ejercicio 3 
+
+```{r}
+Pareja <- c(1:10)
+H <- c(1,2,1,1,0,1,0,2,0,1)
+M <- c(2,1,0,1,0,0,1,1,1,1)
+data.frame(Pareja, H, M)
+```
+
+La probabilidad es de que tanto hombres como mujeres tengan el mismo deseo de tener el mismo número de hijos.
+$$H_0: p=0.5$$
+```{r}
+x3 <- H-M
+x3
+
+v3 <- 0
+
+a3 <- length(x3[x3>v3])
+a3
+
+b3 <- length(x3[x3==v3])
+b3
+
+d3<- length(x3)-b3
+d3
+
+binom.test(a3, d3)
+
+
+```
+
+## Prueba de Rangos con signos de Wilcoxon 
+
+Utiliza dos vectores de entrada 
+
+```{r}
+Alumno_n <- c(1:14)
+pp<- c(70,70,70,80,70,72,70,80,75,90,90,70,70,70)
+sp<- c(95,85,90,97,85,90,85,95,85,90,90,85,95,85)
+
+tabla1 <- data.frame(Alumno_n, pp, sp)
+
+wilcox.test(tabla1$pp, tabla1$sp, paired = T)
+```
+
+## Prueba de Kruskal-Wallis
+
+#Ejercicio con base de datos de CMDX 
+
+```{r}
+library(readxl)
+SO2 <- read_excel("F:/7mo semestre/Estadistica aplicada/SO2.xls")
+
+head(SO2)
+
+names(SO2)
+
+#bso2 <- SO2[-1:-3,] #elimino los tres primeros renglones 
+
+ACO <- data.frame(SO2$FECHA, SO2$HORA, SO2$ACO)
+
+names(ACO)<- c("Fecha","Hora","Valor")
+
+ACO$Valor[ACO$Valor==-99] <- mean(ACO$Valor[ACO$Valor != -99])
+
+#Subset para solamente escoger los valores que tienen hora igual a 16 y mostrar las columnas Fecha y Valor 
+
+ACO_h16 <- subset(ACO, Hora==16, c(Fecha, Valor, Hora))
+
+View(ACO_h16)
+
+#Ahora para filtar el formato de fecha
+
+str(ACO_h16)
+months.POSIXt(ACO_h16$Fecha)
+
+ACO_h16 <- data.frame(months.POSIXt(ACO_h16$Fecha), ACO$Valor)
+
+names(ACO_h16) <- c("MES", "SO2")
+
+View(ACO_h16)
+
+kruskal.test(SO2~MES, data=ACO_h16)
+```
+
+# Prueba Rachas 
+
+Para verificar que los datos son aleatorios
+
+```{r}
+library(tseries)
+
+x <- c(1:10)
+
+x1 <- c(3,4,7,1,9,5,2,6,8,10)
+
+x2 <- sample(c(1:10),10, replace=F)
+
+runs.test(as.factor(x>median(x)))
+
+runs.test(as.factor(x1>median(x1)))
+
+runs.test(as.factor(x2>median(x2)))
+```
+
+
+$$H_0:$$ lOS valores son aleatorios 
+
+# Prueba de Kolmogorov-Smirnov
+
+Para determinar la distribución de los datos
+
+
+```{r}
+x4 <- rnorm(50)
+hist(x4)
+
+y<- runif(50)
+hist(y)
+
+```
+
+$$H_O: x=y$$ tienen la misma distribución 
+```{r}
+ks.test(x,y)
+```
+
+ Hay suficiente evidencia para rechazar la hipotesis de que x y y tienen la misma distribución.
+ 
+ 
+# Prueba de correlación de rangos 
+
+```{r}
+efi <- sample(c(5:10), 10, replace=TRUE)
+
+satis <- sample(c(1:10), 10, replace=FALSE)
+
+cliente <- c(1:10)
+
+tabla <- data.frame(cliente, efi, satis)
+
+cor.test(efi, satis , method="spearman")
+```
+
+Debido a que los valores son generados de manera aleatoria y teniendo en cuenta que la $H_0:\rho =0$  se esperaria que no exista suficiente evidencia para rechar la $H_0$ lo cual nos indicaria que la correlación es igual a 0 entre los datos. 
+
+
+
+
+
+
+
